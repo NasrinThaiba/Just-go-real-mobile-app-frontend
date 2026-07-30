@@ -1,0 +1,291 @@
+import type { FeedItem } from '@/features/news/types/news.types';
+
+export const dummyNews: FeedItem[] = [
+  {
+    id: 'news-1',
+    title: 'Sudden Road Diversion Announced Near T Nagar',
+    description:
+      'Traffic authorities announced a temporary road diversion near T Nagar due to maintenance work. Commuters have been advised to use alternative routes during peak hours.',
+    type: 'news',
+    newsType: 'breaking',
+    language: 'en',
+    category: 'politics',
+    location: 'chennai',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=1200&q=80',
+    author: 'Chennai Local Desk',
+    views: 1740,
+    likes: 155,
+    status: 'published',
+    createdAt: '2026-07-23T07:45:00.000Z',
+    publishedAt: '2026-07-23T08:00:00.000Z',
+  },
+  {
+    id: 'news-2',
+    title: 'அண்ணா சாலையில் கடும் போக்குவரத்து நெரிசல்',
+    description:
+      'அண்ணா சாலையில் கடும் போக்குவரத்து நெரிசல் ஏற்பட்டுள்ளது. வாகன ஓட்டிகள் மாற்று வழிகளை பயன்படுத்துமாறு அறிவுறுத்தப்பட்டுள்ளனர்.',
+    type: 'news',
+    newsType: 'breaking',
+    language: 'ta',
+    category: 'politics',
+    location: 'chennai',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80',
+    author: 'உள்ளூர் செய்தியாளர்',
+    views: 2150,
+    likes: 248,
+    status: 'published',
+    createdAt: '2026-07-23T08:00:00.000Z',
+    publishedAt: '2026-07-23T08:15:00.000Z',
+  },
+  {
+    id: 'news-3',
+    title: 'Heavy Rain Warning Issued for Southern Tamil Nadu',
+    description:
+      'A heavy rain warning has been issued for several southern districts of Tamil Nadu. Residents have been advised to avoid low-lying areas.',
+    type: 'news',
+    newsType: 'breaking',
+    language: 'en',
+    category: 'science',
+    location: 'tamil-nadu',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1200&q=80',
+    author: 'Weather Desk',
+    views: 2890,
+    likes: 312,
+    status: 'published',
+    createdAt: '2026-07-23T07:15:00.000Z',
+    publishedAt: '2026-07-23T07:30:00.000Z',
+  },
+  {
+    id: 'news-4',
+    title: 'தென்தமிழக மாவட்டங்களுக்கு கனமழை எச்சரிக்கை',
+    description:
+      'தென்தமிழகத்தின் பல மாவட்டங்களுக்கு கனமழை எச்சரிக்கை விடுக்கப்பட்டுள்ளது. தாழ்வான பகுதிகளில் வசிப்பவர்கள் எச்சரிக்கையாக இருக்குமாறு அறிவுறுத்தப்பட்டுள்ளனர்.',
+    type: 'news',
+    newsType: 'breaking',
+    language: 'ta',
+    category: 'science',
+    location: 'tamil-nadu',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1519692933481-e162a57d6721?auto=format&fit=crop&w=1200&q=80',
+    author: 'வானிலை செய்தியாளர்',
+    views: 2610,
+    likes: 287,
+    status: 'published',
+    createdAt: '2026-07-23T07:20:00.000Z',
+    publishedAt: '2026-07-23T07:35:00.000Z',
+  },
+  {
+    id: 'news-6',
+    title: 'Weekend Sales Rise Across Small Shops in Chennai',
+    description:
+      'Small shop owners across Chennai reported improved sales after increased weekend footfall.',
+    type: 'news',
+    newsType: 'regular',
+    language: 'en',
+    category: 'business',
+    location: 'chennai',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
+    author: 'Business Desk',
+    views: 1120,
+    likes: 210,
+    status: 'published',
+    createdAt: '2026-07-22T09:45:00.000Z',
+    publishedAt: '2026-07-22T10:00:00.000Z',
+  },
+  {
+    id: 'news-7',
+    title: 'சென்னையில் சிறு கடைகளின் வார இறுதி விற்பனை உயர்வு',
+    description:
+      'வார இறுதி நாட்களில் மக்கள் வருகை அதிகரித்ததால் சென்னையில் பல சிறு கடைகளின் விற்பனை உயர்ந்துள்ளது.',
+    type: 'news',
+    newsType: 'regular',
+    language: 'ta',
+    category: 'business',
+    location: 'chennai',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
+    author: 'வணிக செய்தியாளர்',
+    views: 980,
+    likes: 176,
+    status: 'published',
+    createdAt: '2026-07-22T09:50:00.000Z',
+    publishedAt: '2026-07-22T10:05:00.000Z',
+  },
+  {
+    id: 'news-8',
+    title: 'New Startup Hub Opens in Coimbatore',
+    description:
+      'A new startup hub has opened in Coimbatore to support early-stage founders, technology companies, and local entrepreneurs.',
+    type: 'news',
+    newsType: 'featured',
+    language: 'en',
+    category: 'technology',
+    location: 'coimbatore',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
+    author: 'Coimbatore Business Desk',
+    views: 1460,
+    likes: 265,
+    status: 'published',
+    createdAt: '2026-07-21T11:10:00.000Z',
+    publishedAt: '2026-07-21T11:30:00.000Z',
+  },
+  {
+    id: 'news-9',
+    title: 'Farmers Discuss Water Conservation Methods in Tenkasi',
+    description:
+      'Farmers in Tenkasi discussed irrigation efficiency, rainwater harvesting, and new water conservation methods.',
+    type: 'news',
+    newsType: 'regular',
+    language: 'en',
+    category: 'science',
+    location: 'tenkasi',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80',
+    author: 'Science Contributor',
+    views: 640,
+    likes: 88,
+    status: 'published',
+    createdAt: '2026-07-21T07:45:00.000Z',
+    publishedAt: '2026-07-21T08:00:00.000Z',
+  },
+  {
+    id: 'news-10',
+    title: 'தென்காசியில் நீர் சேமிப்பு முறைகள் குறித்து விவசாயிகள் ஆலோசனை',
+    description:
+      'தென்காசியில் விவசாயிகள் பாசன மேம்பாடு, மழைநீர் சேகரிப்பு மற்றும் நீர் சேமிப்பு முறைகள் குறித்து ஆலோசனை நடத்தினர்.',
+    type: 'news',
+    newsType: 'regular',
+    language: 'ta',
+    category: 'science',
+    location: 'tenkasi',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1200&q=80',
+    author: 'அறிவியல் செய்தியாளர்',
+    views: 590,
+    likes: 74,
+    status: 'published',
+    createdAt: '2026-07-21T07:55:00.000Z',
+    publishedAt: '2026-07-21T08:10:00.000Z',
+  },
+  {
+    id: 'news-12',
+    title: 'Tenkasi College Sports Meet Receives Strong Participation',
+    description:
+      'Students participated in athletics, football, volleyball, and several indoor events during the college sports meet.',
+    type: 'news',
+    newsType: 'trending',
+    language: 'en',
+    category: 'sports',
+    location: 'tenkasi',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80',
+    author: 'Sports Desk',
+    views: 980,
+    likes: 145,
+    status: 'published',
+    createdAt: '2026-07-20T07:45:00.000Z',
+    publishedAt: '2026-07-20T08:00:00.000Z',
+  },
+  {
+    id: 'news-13',
+    title: 'தென்காசி கல்லூரி விளையாட்டு போட்டியில் மாணவர்கள் ஆர்வம்',
+    description:
+      'தென்காசி கல்லூரி விளையாட்டு போட்டியில் தடகளம், கால்பந்து மற்றும் கைப்பந்து உள்ளிட்ட பல போட்டிகளில் மாணவர்கள் பங்கேற்றனர்.',
+    type: 'news',
+    newsType: 'trending',
+    language: 'ta',
+    category: 'sports',
+    location: 'tenkasi',
+    mediaUrl:
+      'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80',
+    author: 'விளையாட்டு செய்தியாளர்',
+    views: 860,
+    likes: 128,
+    status: 'published',
+    createdAt: '2026-07-20T07:55:00.000Z',
+    publishedAt: '2026-07-20T08:10:00.000Z',
+  },
+  {
+  id: 'video-1',
+  title: 'Local Market Fire Brought Under Control',
+  description:
+    'Fire and rescue personnel brought a market fire under control. No major injuries were reported.',
+  type: 'video',
+  videoType: 'breaking',
+  language: 'en',
+  category: 'world',
+  location: 'chennai',
+
+  videoSource: 'youtube',
+  youtubeVideoId: 'aqz-KE-bpKQ',
+
+  mediaUrl:
+    'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+  thumbnailUrl:
+    'https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg',
+
+  author: 'Emergency Desk',
+  views: 3430,
+  likes: 401,
+  status: 'published',
+  createdAt: '2026-07-23T06:30:00.000Z',
+  publishedAt: '2026-07-23T06:45:00.000Z',
+},
+{
+  id: 'video-2',
+  title: 'Tamil Nadu Students Build Low-Cost Water Sensor',
+  description:
+    'A student team developed a low-cost sensor for monitoring water quality in rural communities.',
+  type: 'video',
+  videoType: 'featured',
+  language: 'en',
+  category: 'education',
+  location: 'tamil-nadu',
+
+  videoSource: 'youtube',
+  youtubeVideoId: 'ysz5S6PUM-U',
+
+  mediaUrl:
+    'https://www.youtube.com/watch?v=ysz5S6PUM-U',
+  thumbnailUrl:
+    'https://img.youtube.com/vi/ysz5S6PUM-U/hqdefault.jpg',
+
+  author: 'Education and Science Desk',
+  views: 2210,
+  likes: 332,
+  status: 'published',
+  createdAt: '2026-07-20T09:00:00.000Z',
+  publishedAt: '2026-07-20T09:15:00.000Z',
+},
+{
+  id: 'video-3',
+  title: 'District Football Tournament Final Highlights',
+  description:
+    'Watch the key moments from the district football tournament final.',
+  type: 'video',
+  videoType: 'short',
+  language: 'en',
+  category: 'sports',
+  location: 'tenkasi',
+
+  videoSource: 'youtube',
+  youtubeVideoId: 'jNQXAC9IVRw',
+
+  mediaUrl:
+    'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+  thumbnailUrl:
+    'https://img.youtube.com/vi/jNQXAC9IVRw/hqdefault.jpg',
+
+  author: 'Sports Video Desk',
+  views: 3210,
+  likes: 487,
+  status: 'published',
+  createdAt: '2026-07-19T16:45:00.000Z',
+  publishedAt: '2026-07-19T17:00:00.000Z',
+},
+];
