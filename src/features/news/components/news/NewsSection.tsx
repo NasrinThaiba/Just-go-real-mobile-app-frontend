@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 
-import { NewsCard } from '@/components/news/NewsCard';
-import { SectionHeader } from '@/components/news/SectionHeader';
+import { NewsCard } from '@/features/news/components/news/NewsCard';
+import { SectionHeader } from '@/features/news/components/news/SectionHeader';
 import type { FeedItem } from '@/features/news/types/news.types';
 
 type NewsSectionProps = {

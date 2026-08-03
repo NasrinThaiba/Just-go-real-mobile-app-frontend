@@ -1,23 +1,40 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import {
+  Image,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import type { FeedItem } from '@/features/news/types/news.types';
 import { formatDate } from '@/utils/formatData';
 
-export function NewsCard({ item }: { item: FeedItem }) {
+export function NewsCard({
+  item,
+}: {
+  item: FeedItem;
+}) {
   const router = useRouter();
+
+  const displayDate =
+    item.publishedAt ??
+    item.createdAt;
 
   const openItem = () => {
     router.push(
       item.type === 'video'
         ? ({
             pathname: '/video/[id]',
-            params: { id: item.id },
+            params: {
+              id: item.id,
+            },
           } as never)
         : ({
             pathname: '/article/[id]',
-            params: { id: item.id },
+            params: {
+              id: item.id,
+            },
           } as never),
     );
   };
@@ -30,7 +47,9 @@ export function NewsCard({ item }: { item: FeedItem }) {
       <View className="relative">
         <Image
           source={{
-            uri: item.thumbnailUrl || item.mediaUrl,
+            uri:
+              item.thumbnailUrl ??
+              item.mediaUrl,
           }}
           resizeMode="cover"
           className="h-48 w-full bg-slate-100"
@@ -39,7 +58,11 @@ export function NewsCard({ item }: { item: FeedItem }) {
         {item.type === 'video' ? (
           <View className="absolute inset-0 items-center justify-center bg-black/15">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-black/65">
-              <Ionicons name="play" size={24} color="#FFFFFF" />
+              <Ionicons
+                name="play"
+                size={24}
+                color="#FFFFFF"
+              />
             </View>
           </View>
         ) : null}
@@ -60,18 +83,23 @@ export function NewsCard({ item }: { item: FeedItem }) {
         </Text>
 
         <Text className="mt-2 text-xs font-bold text-textMain">
-          {item.author}
+          {item.author || 'Just Go Real'}
         </Text>
 
         <View className="mt-3 flex-row items-center justify-between">
           <Text className="text-[11px] text-textMuted">
-            {formatDate(item.publishedAt)} · {item.views} views
+            {formatDate(displayDate)} · {item.views ?? 0} views
           </Text>
 
           <View className="flex-row items-center gap-1">
-            <Ionicons name="heart-outline" size={15} color="#667085" />
+            <Ionicons
+              name="heart-outline"
+              size={15}
+              color="#667085"
+            />
+
             <Text className="text-[11px] text-textMuted">
-              {item.likes}
+              {item.likes ?? 0}
             </Text>
           </View>
         </View>

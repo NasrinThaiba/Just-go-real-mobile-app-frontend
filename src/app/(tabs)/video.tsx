@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   Text,
   View,
@@ -9,10 +10,13 @@ import { useTranslation } from 'react-i18next';
 
 import { AppHeader } from '@/components/layout/AppHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { VideoCard } from '@/components/video/VideoCard';
+import { VideoCard } from '@/features/videos/components/VideoCard';
 
 import { useNews } from '@/features/news/hooks/useNews';
 import { useAppLanguage } from '@/hooks/useAppLanguage';
+import { usePublishedVideos } from '@/features/videos/hooks/usePublishedVideos';
+
+import type { FeedItem } from '@/features/news/types/news.types';
 
 export default function VideoScreen() {
   const router = useRouter();
@@ -22,13 +26,38 @@ export default function VideoScreen() {
   const { currentLanguage } =
     useAppLanguage();
 
-  const { items } =
-    useNews(currentLanguage);
+  const {
+    items,
+    isLoading: isNewsLoading,
+  } = useNews(currentLanguage);
 
-  const videos = items.filter(
-    (item) =>
-      item.type === 'video',
-  );
+  const {
+    videos: publishedLocalVideos,
+    isLoading: isLocalVideosLoading,
+    refetch,
+  } = usePublishedVideos();
+
+  const apiVideos =
+    items.filter(
+      (item) =>
+        item.type === 'video',
+    );
+
+  const videos: FeedItem[] = [
+    ...publishedLocalVideos,
+    ...apiVideos.filter(
+      (apiVideo) =>
+        !publishedLocalVideos.some(
+          (localVideo) =>
+            localVideo.id ===
+            apiVideo.id,
+        ),
+    ),
+  ];
+
+  const isLoading =
+    isNewsLoading ||
+    isLocalVideosLoading;
 
   const appLanguage: 'en' | 'ta' =
     i18n.resolvedLanguage === 'ta'
@@ -57,8 +86,25 @@ export default function VideoScreen() {
         showsVerticalScrollIndicator={
           false
         }
+        refreshing={isLoading}
+        onRefresh={() => {
+          void refetch();
+        }}
         ListEmptyComponent={
-          <EmptyState message="No videos available" />
+          isLoading ? (
+            <View className="items-center py-16">
+              <ActivityIndicator
+                size="large"
+                color="#F0442D"
+              />
+
+              <Text className="mt-3 text-sm font-semibold text-textMuted">
+                Loading videos...
+              </Text>
+            </View>
+          ) : (
+            <EmptyState message="No videos available" />
+          )
         }
         renderItem={({ item }) => (
           <VideoCard

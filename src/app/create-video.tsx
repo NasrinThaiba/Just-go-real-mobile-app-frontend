@@ -1,37 +1,37 @@
-import { useEffect, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  useVideoPlayer,
-  VideoView,
+    useVideoPlayer,
+    VideoView,
 } from 'expo-video';
-import YoutubePlayer from 'react-native-youtube-iframe';
+import { useEffect, useState } from 'react';
+import {
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import YoutubePlayer from 'react-native-youtube-iframe';
 
 import { AppButton } from '@/components/ui/AppButton';
 import { AppInput } from '@/components/ui/AppInput';
 
-import {
-  getCreatedVideoById,
-  saveCreatedVideo,
-  updateCreatedVideo,
-} from '@/features/news/storage/videoStorage';
 import type {
-  FeedItem,
-  SupportedLanguage,
-  VideoType,
+    FeedItem,
+    SupportedLanguage,
+    VideoType,
 } from '@/features/news/types/news.types';
+import {
+    getCreatedVideoById,
+    saveCreatedVideo,
+    updateCreatedVideo,
+} from '@/features/videos/storage/videoStorage';
 
 type CategoryValue =
   | 'politics'

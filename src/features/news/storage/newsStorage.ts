@@ -62,8 +62,7 @@ export async function updateCreatedNewsStatus(
   newsId: string,
   status: PostStatus,
 ): Promise<void> {
-  const existingNews =
-    await getCreatedNews();
+  const existingNews = await getCreatedNews();
 
   const updatedNews =
     existingNews.map((item) => {
@@ -86,6 +85,8 @@ export async function updateCreatedNewsStatus(
     CREATED_NEWS_KEY,
     JSON.stringify(updatedNews),
   );
+
+  console.log('NEWS STATUS UPDATED:', newsId, status );
 }
 
 export async function deleteCreatedNews(

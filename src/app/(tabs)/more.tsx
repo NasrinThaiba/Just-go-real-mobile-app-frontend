@@ -10,10 +10,17 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { AppHeader } from '@/components/layout/AppHeader';
+import { useProfile } from '@/features/profile/hooks/useProfile';
 
 export default function MoreScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+
+  const { profile } =
+    useProfile();
+
+  const isAdmin =
+    profile.role === 'admin';
 
   return (
     <SafeAreaView
@@ -27,7 +34,9 @@ export default function MoreScreen() {
         contentContainerStyle={{
           paddingBottom: 40,
         }}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={
+          false
+        }
       >
         <View className="px-4 pb-3 pt-2">
           <Text className="text-2xl font-black text-textMain">
@@ -40,19 +49,19 @@ export default function MoreScreen() {
         </View>
 
         <View className="mt-3 px-4">
-          <Text className="mb-3 text-sm font-extrabold uppercase tracking-wide text-textMuted">
-            Account
-          </Text>
+          <SectionTitle title="Account" />
 
           <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
             <MenuItem
               icon="person-outline"
-              label="Profile Settings"
-              description="Update your name, phone and profile photo"
+              label="Profile"
+              description="View and manage your profile"
               iconBackground="bg-blue-50"
               iconColor="#2563EB"
               onPress={() =>
-                router.push('/profile-settings')
+                router.push(
+                  '/profile',
+                )
               }
             />
 
@@ -63,15 +72,18 @@ export default function MoreScreen() {
               iconBackground="bg-green-50"
               iconColor="#16A34A"
               onPress={() =>
-                router.push('/location-settings')
+                router.push(
+                  '/location-settings',
+                )
               }
               showBorder={false}
             />
           </View>
 
-          <Text className="mb-3 mt-6 text-sm font-extrabold uppercase tracking-wide text-textMuted">
-            Content
-          </Text>
+          <SectionTitle
+            title="Content"
+            className="mt-6"
+          />
 
           <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
             <MenuItem
@@ -81,7 +93,9 @@ export default function MoreScreen() {
               iconBackground="bg-orange-50"
               iconColor="#F0442D"
               onPress={() =>
-                router.push('/my-posts')
+                router.push(
+                  '/my-posts',
+                )
               }
             />
 
@@ -92,7 +106,9 @@ export default function MoreScreen() {
               iconBackground="bg-purple-50"
               iconColor="#7C3AED"
               onPress={() =>
-                router.push('/create-news')
+                router.push(
+                  '/create-news',
+                )
               }
             />
 
@@ -103,14 +119,87 @@ export default function MoreScreen() {
               iconBackground="bg-red-50"
               iconColor="#DC2626"
               onPress={() =>
-                router.push('/create-video')
+                router.push(
+                  '/create-video',
+                )
               }
-              showBorder={false}
+              showBorder={
+                !isAdmin
+              }
             />
           </View>
+
+          {isAdmin ? (
+            <>
+              <SectionTitle
+                title="Admin"
+                className="mt-6"
+              />
+
+              <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
+                <MenuItem
+                  icon="shield-checkmark-outline"
+                  label="Admin Dashboard"
+                  description="View content and moderation statistics"
+                  iconBackground="bg-indigo-50"
+                  iconColor="#4F46E5"
+                  onPress={() =>
+                    router.push(
+                      '/admin',
+                    )
+                  }
+                />
+
+                <MenuItem
+                  icon="checkmark-done-outline"
+                  label="Post Approvals"
+                  description="Review pending news and videos"
+                  iconBackground="bg-amber-50"
+                  iconColor="#D97706"
+                  onPress={() =>
+                    router.push(
+                      '/admin/post-approval',
+                    )
+                  }
+                />
+
+                <MenuItem
+                  icon="people-outline"
+                  label="User Management"
+                  description="View and manage application users"
+                  iconBackground="bg-cyan-50"
+                  iconColor="#0891B2"
+                  onPress={() =>
+                    router.push(
+                      '/admin/users',
+                    )
+                  }
+                  showBorder={false}
+                />
+              </View>
+            </>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+type SectionTitleProps = {
+  title: string;
+  className?: string;
+};
+
+function SectionTitle({
+  title,
+  className = '',
+}: SectionTitleProps) {
+  return (
+    <Text
+      className={`mb-3 text-sm font-extrabold uppercase tracking-wide text-textMuted ${className}`}
+    >
+      {title}
+    </Text>
   );
 }
 

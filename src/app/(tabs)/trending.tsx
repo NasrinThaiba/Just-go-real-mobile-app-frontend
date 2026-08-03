@@ -1,14 +1,14 @@
+import { useTranslation } from 'react-i18next';
 import {
-  FlatList,
-  Text,
-  View,
+    FlatList,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
 
 import { AppHeader } from '@/components/layout/AppHeader';
-import { NewsCard } from '@/components/news/NewsCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { NewsCard } from '@/features/news/components/news/NewsCard';
 
 import { useNews } from '@/features/news/hooks/useNews';
 import { useAppLanguage } from '@/hooks/useAppLanguage';

@@ -85,6 +85,12 @@ export async function updateCreatedVideoStatus(
     CREATED_VIDEOS_KEY,
     JSON.stringify(updatedVideos),
   );
+
+  console.log(
+    'VIDEO STATUS UPDATED:',
+    videoId,
+    status,
+  );
 }
 
 export async function deleteCreatedVideo(

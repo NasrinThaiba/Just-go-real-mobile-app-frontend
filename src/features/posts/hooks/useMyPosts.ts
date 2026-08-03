@@ -6,8 +6,8 @@ import {
 } from 'react';
 
 import { getCreatedNews } from '@/features/news/storage/newsStorage';
-import { getCreatedVideos } from '@/features/news/storage/videoStorage';
 import type { FeedItem } from '@/features/news/types/news.types';
+import { getCreatedVideos } from '@/features/videos/storage/videoStorage';
 
 export type MyPostFilter =
   | 'all'

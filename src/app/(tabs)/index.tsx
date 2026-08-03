@@ -27,7 +27,7 @@ import { formatRelativeDate } from '@/utils/formatData';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const [drawerVisible, setDrawerVisible] =
     useState(false);
@@ -47,9 +47,7 @@ export default function HomeScreen() {
     sportsNews,
   } = useNews(currentLanguage);
 
-  const {
-    topAds,
-  } = useAds();
+  const { topAds } = useAds();
 
   const appLanguage =
     i18n.resolvedLanguage === 'ta'
@@ -63,13 +61,18 @@ export default function HomeScreen() {
       ...sportsNews,
     ];
 
-    const uniqueNews = combinedNews.filter(
-      (item, index, collection) =>
-        collection.findIndex(
-          (newsItem) =>
-            newsItem.id === item.id,
-        ) === index,
-    );
+    const uniqueNews =
+      combinedNews.filter(
+        (
+          item,
+          index,
+          collection,
+        ) =>
+          collection.findIndex(
+            (newsItem) =>
+              newsItem.id === item.id,
+          ) === index,
+      );
 
     return uniqueNews
       .sort((first, second) => {
@@ -82,8 +85,12 @@ export default function HomeScreen() {
           second.createdAt;
 
         return (
-          new Date(secondDate).getTime() -
-          new Date(firstDate).getTime()
+          new Date(
+            secondDate,
+          ).getTime() -
+          new Date(
+            firstDate,
+          ).getTime()
         );
       })
       .slice(0, 5);
@@ -128,56 +135,10 @@ export default function HomeScreen() {
           paddingHorizontal: 14,
           paddingBottom: 40,
         }}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={
+          false
+        }
       >
-        {/* Language and location */}
-
-        <View className="mt-2 flex-row gap-3">
-          <Pressable
-            className="h-11 flex-1 flex-row items-center justify-center rounded-full border border-borderSoft bg-white px-4"
-          >
-            <Text className="text-sm font-bold text-textMain">
-              {currentLanguage === 'ta'
-                ? 'தமிழ்'
-                : 'English'}
-            </Text>
-
-            <Ionicons
-              name="chevron-down"
-              size={15}
-              color="#667085"
-              style={{
-                marginLeft: 5,
-              }}
-            />
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              router.push(
-                '/location-settings',
-              )
-            }
-            className="h-11 flex-1 flex-row items-center justify-center rounded-full border border-borderSoft bg-white px-4"
-          >
-            <Text
-              numberOfLines={1}
-              className="text-sm font-bold text-textMain"
-            >
-              Tamil Nadu
-            </Text>
-
-            <Ionicons
-              name="chevron-down"
-              size={15}
-              color="#667085"
-              style={{
-                marginLeft: 5,
-              }}
-            />
-          </Pressable>
-        </View>
-
         {/* Top advertisement */}
 
         <View className="mt-4">
@@ -187,7 +148,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Ad carousel dots */}
+        {/* Advertisement dots */}
 
         {topAds.length > 1 ? (
           <View className="mt-3 flex-row items-center justify-center gap-1.5">
@@ -202,14 +163,14 @@ export default function HomeScreen() {
 
         <SectionHeader
           title="Breaking News"
-          onViewAll={() =>
-            router.push({
-              pathname: '/(tabs)/news',
+          onViewAll={() => {
+            router.navigate({
+              pathname: '/news',
               params: {
                 type: 'breaking',
               },
-            })
-          }
+            });
+          }}
         />
 
         {isBreakingLoading ? (
@@ -222,7 +183,8 @@ export default function HomeScreen() {
               {breakingError}
             </Text>
           </View>
-        ) : breakingNews.length > 0 ? (
+        ) : breakingNews.length >
+          0 ? (
           <BreakingCarousel
             news={breakingNews}
           />
@@ -239,23 +201,27 @@ export default function HomeScreen() {
         <SectionHeader
           title="Latest News"
           className="mt-7"
-          onViewAll={() =>
-            router.push('/(tabs)/news')
-          }
+          onViewAll={() => {
+            router.navigate('/news');
+          }}
         />
 
         <View>
           {latestNews.length > 0 ? (
-            latestNews.map((item) => (
-              <LatestNewsItem
-                key={item.id}
-                item={item}
-                language={appLanguage}
-                onPress={() =>
-                  openNews(item)
-                }
-              />
-            ))
+            latestNews.map(
+              (item) => (
+                <LatestNewsItem
+                  key={item.id}
+                  item={item}
+                  language={
+                    appLanguage
+                  }
+                  onPress={() =>
+                    openNews(item)
+                  }
+                />
+              ),
+            )
           ) : (
             <View className="rounded-2xl bg-slate-50 px-4 py-10">
               <Text className="text-center text-sm font-semibold text-textMuted">
