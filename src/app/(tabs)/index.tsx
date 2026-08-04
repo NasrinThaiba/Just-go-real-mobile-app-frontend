@@ -25,6 +25,51 @@ import type { FeedItem } from '@/features/news/types/news.types';
 import { useAppLanguage } from '@/hooks/useAppLanguage';
 import { formatRelativeDate } from '@/utils/formatData';
 
+type CategoryItem = {
+  id: string;
+  label: string;
+  image: string;
+};
+
+const categories: CategoryItem[] = [
+  {
+    id: 'politics',
+    label: 'Politics',
+    image:
+      'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=700',
+  },
+  {
+    id: 'science',
+    label: 'Science',
+    image:
+      'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=700',
+  },
+  {
+    id: 'technology',
+    label: 'Technology',
+    image:
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=700',
+  },
+  {
+    id: 'sports',
+    label: 'Sports',
+    image:
+      'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=700',
+  },
+  {
+    id: 'business',
+    label: 'Business',
+    image:
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=700',
+  },
+  {
+    id: 'cinema',
+    label: 'Cinema',
+    image:
+      'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=700',
+  },
+];
+
 export default function HomeScreen() {
   const router = useRouter();
   const { i18n } = useTranslation();
@@ -111,6 +156,17 @@ export default function HomeScreen() {
     });
   };
 
+  const openCategory = (
+    category: string,
+  ) => {
+    router.push({
+      pathname: '/news',
+      params: {
+        category,
+      },
+    });
+  };
+
   return (
     <SafeAreaView
       edges={['top']}
@@ -141,23 +197,23 @@ export default function HomeScreen() {
       >
         {/* Top advertisement */}
 
-        <View className="mt-4">
+        {/* <View className="mt-4">
           <ImageAd
             ads={topAds}
             size="top"
           />
-        </View>
+        </View> */}
 
         {/* Advertisement dots */}
 
-        {topAds.length > 1 ? (
+        {/* {topAds.length > 1 ? (
           <View className="mt-3 flex-row items-center justify-center gap-1.5">
             <View className="h-2 w-2 rounded-full bg-primary" />
             <View className="h-2 w-2 rounded-full bg-slate-300" />
             <View className="h-2 w-2 rounded-full bg-slate-300" />
             <View className="h-2 w-2 rounded-full bg-slate-300" />
           </View>
-        ) : null}
+        ) : null} */}
 
         {/* Breaking news */}
 
@@ -195,6 +251,74 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
+
+        {/* Categories */}
+
+        <View className="mt-7">
+          <View className="mb-3 flex-row items-center justify-between">
+            <Text className="text-xl font-black text-textMain">
+              Categories
+            </Text>
+
+            <Pressable
+              onPress={() =>
+                router.push('/categories')
+              }
+              hitSlop={10}
+              className="flex-row items-center"
+            >
+              <Text className="text-sm font-bold text-primary">
+                View All
+              </Text>
+
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color="#F0442D"
+              />
+            </Pressable>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              gap: 12,
+              paddingRight: 14,
+            }}
+          >
+            {categories.map((category) => (
+              <Pressable
+                key={category.id}
+                onPress={() =>
+                  openCategory(
+                    category.label,
+                  )
+                }
+                className="h-32 w-28 overflow-hidden rounded-2xl bg-slate-900 active:opacity-80"
+              >
+                <Image
+                  source={{
+                    uri: category.image,
+                  }}
+                  resizeMode="cover"
+                  className="h-full w-full"
+                />
+
+                <View className="absolute inset-0 bg-black/35" />
+
+                <View className="absolute bottom-0 left-0 right-0 p-3">
+                  <Text
+                    numberOfLines={1}
+                    className="text-sm font-black text-white"
+                  >
+                    {category.label}
+                  </Text>
+                </View>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
 
         {/* Latest news */}
 

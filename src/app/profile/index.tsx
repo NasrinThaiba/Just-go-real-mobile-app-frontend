@@ -1,5 +1,5 @@
-import EditProfilePage from '@/features/profile/components/EditProfilePage';
+import ProfilePage from '@/features/profile/components/ProfilePage';
 
-export default function ProfileSettingsScreen() {
-  return <EditProfilePage />;
+export default function ProfileScreen() {
+  return <ProfilePage />;
 }

@@ -94,7 +94,7 @@ export default function ProfilePage() {
         <Pressable
           onPress={() =>
             router.push(
-              '/profile-settings',
+              '/profile/profile-settings',
             )
           }
           className="mt-5 flex-row items-center rounded-2xl border border-borderSoft bg-white p-4 active:opacity-70"

@@ -27,10 +27,10 @@ export const ta = {
 
   tabs: {
     home: 'முகப்பு',
-    news: 'செய்திகள்',
-    trending: 'பிரபலமானவை',
+    discover: 'கண்டறிய',
     video: 'வீடியோ',
-    more: 'மேலும்',
+    saved: 'சேமித்தவை',
+    activity: 'செயல்பாடுகள்',
   },
 
   home: {
@@ -45,14 +45,15 @@ export const ta = {
   profile: {
     guest: 'விருந்தினர்',
     role: 'விருந்தினர்',
-    changePhoto: 'படத்தை மாற்று',
+    changePhoto: 'புகைப்படத்தை மாற்று',
     editProfile: 'சுயவிவரத்தை திருத்து',
-    setLocation: 'இடத்தை அமை',
+    language: 'மொழி',
+    location: 'இருப்பிடம்',
+    setLocation: 'இருப்பிடத்தை அமைக்கவும்',
     logout: 'வெளியேறு',
-
-    fullName: 'முழு பெயர்',
+    fullName: 'முழுப் பெயர்',
     phoneNumber: 'தொலைபேசி எண்',
-    saveProfile: 'சுயவிவரத்தை சேமிக்க',
+    saveProfile: 'சுயவிவரத்தை சேமிக்கவும்',
     profileUpdated: 'சுயவிவரம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது.',
   },
 

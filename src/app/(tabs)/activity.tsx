@@ -15,12 +15,8 @@ import { useProfile } from '@/features/profile/hooks/useProfile';
 export default function MoreScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-
-  const { profile } =
-    useProfile();
-
-  const isAdmin =
-    profile.role === 'admin';
+  const { profile } = useProfile();
+  const isAdmin = profile.role === 'admin';
 
   return (
     <SafeAreaView
@@ -38,51 +34,16 @@ export default function MoreScreen() {
           false
         }
       >
-        <View className="px-4 pb-3 pt-2">
-          <Text className="text-2xl font-black text-textMain">
-            {t('tabs.more')}
-          </Text>
 
-          <Text className="mt-1 text-sm text-textMuted">
-            Manage your profile, content and settings
-          </Text>
-        </View>
-
-        <View className="mt-3 px-4">
-          <SectionTitle title="Account" />
-
-          <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
-            <MenuItem
-              icon="person-outline"
-              label="Profile"
-              description="View and manage your profile"
-              iconBackground="bg-blue-50"
-              iconColor="#2563EB"
-              onPress={() =>
-                router.push(
-                  '/profile',
-                )
-              }
-            />
-
-            <MenuItem
-              icon="location-outline"
-              label="Location Settings"
-              description="Choose your preferred Tamil Nadu location"
-              iconBackground="bg-green-50"
-              iconColor="#16A34A"
-              onPress={() =>
-                router.push(
-                  '/location-settings',
-                )
-              }
-              showBorder={false}
-            />
-          </View>
+      <View className="mt-3 px-4">
 
           <SectionTitle
-            title="Content"
-            className="mt-6"
+            title={
+              isAdmin
+                ? 'Admin Dashboard'
+                  : 'User Dashboard'
+            }
+            className="mt-3"
           />
 
           <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">

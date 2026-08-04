@@ -2,6 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+const ACTIVE_COLOR = '#F0442D';
+const INACTIVE_COLOR = '#667085';
+
 export default function TabLayout() {
   const { t } = useTranslation();
 
@@ -9,18 +12,27 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#F0442D',
-        tabBarInactiveTintColor: '#667085',
+        tabBarActiveTintColor: ACTIVE_COLOR,
+        tabBarInactiveTintColor: INACTIVE_COLOR,
+
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
+          marginTop: 2,
         },
+
+        tabBarIconStyle: {
+          marginTop: 2,
+        },
+
         tabBarStyle: {
-          height: 68,
-          paddingTop: 8,
+          height: 70,
+          paddingTop: 7,
           paddingBottom: 8,
+          borderTopWidth: 1,
           borderTopColor: '#E5E7EB',
           backgroundColor: '#FFFFFF',
+          elevation: 0,
         },
       }}
     >
@@ -28,10 +40,10 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name="home-outline"
-              size={size}
+              name={focused ? 'home' : 'home-outline'}
+              size={23}
               color={color}
             />
           ),
@@ -39,27 +51,13 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="news"
+        name="discovers"
         options={{
-          title: t('tabs.news'),
-          tabBarIcon: ({ color, size }) => (
+          title: t('tabs.discover'),
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name="newspaper-outline"
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="trending"
-        options={{
-          title: t('tabs.trending'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="trending-up-outline"
-              size={size}
+              name={focused ? 'compass' : 'compass-outline'}
+              size={24}
               color={color}
             />
           ),
@@ -70,10 +68,10 @@ export default function TabLayout() {
         name="video"
         options={{
           title: t('tabs.video'),
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name="play-circle-outline"
-              size={size}
+              name={focused ? 'play-circle' : 'play-circle-outline'}
+              size={25}
               color={color}
             />
           ),
@@ -81,13 +79,27 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="more"
+        name="saved"
         options={{
-          title: t('tabs.more'),
-          tabBarIcon: ({ color, size }) => (
+          title: t('tabs.saved'),
+          tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name="ellipsis-horizontal-outline"
-              size={size}
+              name={focused ? 'bookmark' : 'bookmark-outline'}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="activity"
+        options={{
+          title: t('tabs.activity'),
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'grid' : 'grid-outline'}
+              size={23}
               color={color}
             />
           ),

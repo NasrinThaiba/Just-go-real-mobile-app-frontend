@@ -78,7 +78,8 @@ export default function ProfileMenu() {
 
         Toast.show({
           type: 'success',
-          text1: 'Profile photo updated',
+          text1:
+            'Profile photo updated',
           visibilityTime: 1200,
         });
       } catch (error) {
@@ -100,8 +101,12 @@ export default function ProfileMenu() {
     async () => {
       try {
         await logoutUser();
+
         setVisible(false);
-        router.replace('/auth/login');
+
+        router.replace(
+          '/auth/login',
+        );
       } catch (error) {
         console.error(
           'Logout failed:',
@@ -215,9 +220,9 @@ export default function ProfileMenu() {
                 label={t(
                   'profile.changePhoto',
                 )}
-                onPress={() =>
-                  void pickProfileImage()
-                }
+                onPress={() => {
+                  void pickProfileImage();
+                }}
               />
 
               <ProfileAction
@@ -227,6 +232,7 @@ export default function ProfileMenu() {
                 )}
                 onPress={() => {
                   setVisible(false);
+
                   router.push(
                     '/profile/profile-settings',
                   );
@@ -234,12 +240,27 @@ export default function ProfileMenu() {
               />
 
               <ProfileAction
-                icon="location-outline"
+                icon="language-outline"
                 label={t(
-                  'profile.setLocation',
+                  'profile.language',
                 )}
                 onPress={() => {
                   setVisible(false);
+
+                  router.push(
+                    '/language-settings',
+                  );
+                }}
+              />
+
+              <ProfileAction
+                icon="location-outline"
+                label={t(
+                  'profile.location',
+                )}
+                onPress={() => {
+                  setVisible(false);
+
                   router.push(
                     '/location-settings',
                   );
@@ -252,9 +273,9 @@ export default function ProfileMenu() {
                   'profile.logout',
                 )}
                 destructive
-                onPress={() =>
-                  void handleLogout()
-                }
+                onPress={() => {
+                  void handleLogout();
+                }}
               />
             </View>
           </Pressable>

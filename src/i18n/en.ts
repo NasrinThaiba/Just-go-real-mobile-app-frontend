@@ -24,13 +24,13 @@ export const en = {
     noData: 'No data available',
     advertisementClosed: 'Advertisement closed',
   },
-
+  
   tabs: {
     home: 'Home',
-    news: 'News',
-    trending: 'Trending',
+    discover: 'Discover',
     video: 'Video',
-    more: 'More',
+    saved: 'Saved',
+    activity: 'Activity',
   },
 
   home: {
@@ -45,9 +45,14 @@ export const en = {
   profile: {
     guest: 'Guest User',
     role: 'Guest',
+
     changePhoto: 'Change Photo',
     editProfile: 'Edit Profile',
+
+    language: 'Language',
+    location: 'Location',
     setLocation: 'Set Location',
+
     logout: 'Logout',
 
     fullName: 'Full name',
