@@ -1,14 +1,14 @@
-import {
-  Image,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import {
+    Image,
+    Pressable,
+    Text,
+    View,
+} from 'react-native';
 
 import type { FeedItem } from '@/features/news/types/news.types';
-import { formatDate } from '@/utils/formatData';
+import { formatDate } from '@/utils/formatDate';
 
 export function NewsCard({
   item,

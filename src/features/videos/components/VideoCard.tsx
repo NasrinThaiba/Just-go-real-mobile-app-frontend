@@ -1,13 +1,13 @@
-import {
-  Image,
-  Pressable,
-  Text,
-  View,
-} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import {
+    Image,
+    Pressable,
+    Text,
+    View,
+} from 'react-native';
 
 import type { FeedItem } from '@/features/news/types/news.types';
-import { formatRelativeDate } from '@/utils/formatData';
+import { formatRelativeDate } from '@/utils/formatDate';
 
 type VideoCardProps = {
   item: FeedItem;

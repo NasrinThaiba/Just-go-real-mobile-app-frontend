@@ -36,111 +36,105 @@ export default function MoreScreen() {
       >
 
       <View className="mt-3 px-4">
+        <View className="mb-4 mt-3">
+          <View className="flex-row items-center">
+            <Text className="text-[20px] font-black leading-9 text-textMain">
+              {isAdmin ? 'Admin' : 'User'}
+            </Text>
 
-          <SectionTitle
-            title={
-              isAdmin
-                ? 'Admin Dashboard'
-                  : 'User Dashboard'
-            }
-            className="mt-3"
-          />
-
-          <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
-            <MenuItem
-              icon="documents-outline"
-              label="My Posts"
-              description="View news, videos, favorites and analytics"
-              iconBackground="bg-orange-50"
-              iconColor="#F0442D"
-              onPress={() =>
-                router.push(
-                  '/my-posts',
-                )
-              }
-            />
-
-            <MenuItem
-              icon="create-outline"
-              label="Create News"
-              description="Publish a new article or breaking news"
-              iconBackground="bg-purple-50"
-              iconColor="#7C3AED"
-              onPress={() =>
-                router.push(
-                  '/create-news',
-                )
-              }
-            />
-
-            <MenuItem
-              icon="videocam-outline"
-              label="Create Video"
-              description="Upload and publish a news video"
-              iconBackground="bg-red-50"
-              iconColor="#DC2626"
-              onPress={() =>
-                router.push(
-                  '/create-video',
-                )
-              }
-              showBorder={
-                !isAdmin
-              }
-            />
+            <Text className="ml-2 text-[20px] font-black leading-9 text-[#F0442D]">
+              Dashboard
+            </Text>
           </View>
 
-          {isAdmin ? (
-            <>
-              <SectionTitle
-                title="Admin"
-                className="mt-6"
+          <Text className="mt-1 text-sm font-medium leading-5 text-textMuted">
+            {isAdmin
+              ? 'Manage content, users and platform activity'
+              : 'Create content and manage your published posts'}
+          </Text>
+        </View>
+
+        <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
+          <MenuItem
+            icon="documents-outline"
+            label="My Posts"
+            description="View news, videos, favorites and analytics"
+            iconBackground="bg-orange-50"
+            iconColor="#F0442D"
+            onPress={() =>
+              router.push('/my-posts')
+            }
+          />
+
+          <MenuItem
+            icon="create-outline"
+            label="Create News"
+            description="Publish a new article or breaking news"
+            iconBackground="bg-purple-50"
+            iconColor="#7C3AED"
+            onPress={() =>
+              router.push('/create-news')
+            }
+          />
+
+          <MenuItem
+            icon="videocam-outline"
+            label="Create Video"
+            description="Upload and publish a news video"
+            iconBackground="bg-red-50"
+            iconColor="#DC2626"
+            onPress={() =>
+              router.push('/create-video')
+            }
+            showBorder={!isAdmin}
+          />
+        </View>
+
+        {isAdmin ? (
+          <>
+            <SectionTitle
+              title="Admin"
+              className="mt-6"
+            />
+
+            <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
+              <MenuItem
+                icon="shield-checkmark-outline"
+                label="Admin Dashboard"
+                description="View content and moderation statistics"
+                iconBackground="bg-indigo-50"
+                iconColor="#4F46E5"
+                onPress={() =>
+                  router.push('/admin')
+                }
               />
 
-              <View className="overflow-hidden rounded-2xl border border-borderSoft bg-white">
-                <MenuItem
-                  icon="shield-checkmark-outline"
-                  label="Admin Dashboard"
-                  description="View content and moderation statistics"
-                  iconBackground="bg-indigo-50"
-                  iconColor="#4F46E5"
-                  onPress={() =>
-                    router.push(
-                      '/admin',
-                    )
-                  }
-                />
+              <MenuItem
+                icon="checkmark-done-outline"
+                label="Post Approvals"
+                description="Review pending news and videos"
+                iconBackground="bg-amber-50"
+                iconColor="#D97706"
+                onPress={() =>
+                  router.push('/admin/post-approval')
+                }
+              />
 
-                <MenuItem
-                  icon="checkmark-done-outline"
-                  label="Post Approvals"
-                  description="Review pending news and videos"
-                  iconBackground="bg-amber-50"
-                  iconColor="#D97706"
-                  onPress={() =>
-                    router.push(
-                      '/admin/post-approval',
-                    )
-                  }
-                />
-
-                <MenuItem
-                  icon="people-outline"
-                  label="User Management"
-                  description="View and manage application users"
-                  iconBackground="bg-cyan-50"
-                  iconColor="#0891B2"
-                  onPress={() =>
-                    router.push(
-                      '/admin/users',
-                    )
-                  }
-                  showBorder={false}
-                />
-              </View>
-            </>
-          ) : null}
-        </View>
+              <MenuItem
+                icon="people-outline"
+                label="User Management"
+                description="View and manage application users"
+                iconBackground="bg-cyan-50"
+                iconColor="#0891B2"
+                onPress={() =>
+                  router.push('/admin/users')
+                }
+                showBorder={false}
+              />
+            </View>
+          </>
+        ) : null}
+      </View>
       </ScrollView>
     </SafeAreaView>
   );

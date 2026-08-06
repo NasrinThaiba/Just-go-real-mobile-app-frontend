@@ -1,8 +1,19 @@
+export type UserRole =
+  | 'user'
+  | 'admin';
+
+export type InteractionUser = {
+  id: string;
+  name: string;
+  role: UserRole;
+};
+
 export type StoredComment = {
   id: string;
-  contentId: string;
-  message: string;
   author: string;
+  authorId: string;
+  authorRole: UserRole;
+  message: string;
   createdAt: string;
 };
 

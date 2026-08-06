@@ -1,4 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Image,
   Pressable,
@@ -7,11 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
 
-import ImageAd from '@/components/ads/ImageAd';
 import BreakingCarousel from '@/components/breaking/BreakingCarousel';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { SideDrawer } from '@/components/layout/SideDrawer';
@@ -23,7 +22,11 @@ import { useNews } from '@/features/news/hooks/useNews';
 import type { FeedItem } from '@/features/news/types/news.types';
 
 import { useAppLanguage } from '@/hooks/useAppLanguage';
-import { formatRelativeDate } from '@/utils/formatData';
+import { getPublisherImage } from '@/features/news/constants/publisher-images';
+import { useSavedContent } from '@/features/saved/context/SavedContext';
+
+import type { SupportedLanguage } from '@/types/common.types';
+import { formatPublishedTime, formatViews } from '@/utils/content-formatters';
 
 type CategoryItem = {
   id: string;
@@ -392,7 +395,7 @@ function SectionHeader({
 
 type LatestNewsItemProps = {
   item: FeedItem;
-  language: 'en' | 'ta';
+  language: SupportedLanguage;
   onPress: () => void;
 };
 
@@ -401,60 +404,169 @@ function LatestNewsItem({
   language,
   onPress,
 }: LatestNewsItemProps) {
+  const {
+    isSaved,
+    toggleSaved,
+  } = useSavedContent();
+
+  const itemIsSaved =
+    isSaved(item.id);
+
   const displayDate =
     item.publishedAt ??
     item.createdAt;
 
+  const imageUrl =
+    item.thumbnailUrl ??
+    item.mediaUrl;
+
+  const publisherName =
+    item.author?.trim() ||
+    'News Publisher';
+
+  const publisherImage =
+    getPublisherImage(
+      publisherName,
+    );
+
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row border-b border-borderSoft py-3 active:opacity-70"
+      className="mb-5 overflow-hidden rounded-[22px] border border-slate-100 bg-white active:opacity-80"
+      style={{
+        shadowColor: '#101828',
+        shadowOffset: {
+          width: 0,
+          height: 3,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+      }}
     >
-      <Image
-        source={{
-          uri: item.mediaUrl,
-        }}
-        resizeMode="cover"
-        className="h-[82px] w-24 rounded-xl bg-slate-100"
-      />
+      {/* News image */}
 
-      <View className="ml-3 flex-1 justify-center">
-        <Text
-          numberOfLines={2}
-          className="text-[15px] font-black leading-5 text-textMain"
-        >
-          {item.title}
-        </Text>
+      <View className="relative">
+        <Image
+          source={{
+            uri: imageUrl,
+          }}
+          resizeMode="cover"
+          className="h-44 w-full bg-slate-100"
+        />
 
-        <View className="mt-2 flex-row items-center">
+        <View className="absolute inset-0 bg-black/10" />
+
+        {/* Category overlay */}
+
+        <View className="absolute left-4 top-4 max-w-[70%] rounded-full bg-white/95 px-3 py-1.5">
           <Text
             numberOfLines={1}
-            className="max-w-[45%] text-xs font-semibold capitalize text-textMuted"
+            className="text-[10px] font-black uppercase tracking-wide text-[#F0442D]"
           >
             {item.category}
-          </Text>
-
-          <View className="mx-2 h-1 w-1 rounded-full bg-slate-400" />
-
-          <Text className="text-xs font-semibold text-textMuted">
-            {formatRelativeDate(
-              displayDate,
-              language,
-            )}
           </Text>
         </View>
       </View>
 
-      <Pressable
-        hitSlop={10}
-        className="ml-1 h-9 w-8 items-center justify-center"
-      >
-        <Ionicons
-          name="ellipsis-vertical"
-          size={18}
-          color="#667085"
-        />
-      </Pressable>
+      {/* News content */}
+
+      <View className="p-4">
+        <Text
+          numberOfLines={3}
+          className="text-[16px] font-extrabold leading-5 text-textMain"
+        >
+          {item.title}
+        </Text>
+
+        {/* Publisher details and save button */}
+
+        <View className="mt-4 flex-row items-center">
+          <Image
+            source={{
+              uri: publisherImage,
+            }}
+            resizeMode="cover"
+            className="h-10 w-10 rounded-full bg-slate-200"
+          />
+
+          <View className="ml-3 flex-1">
+            <Text
+              numberOfLines={1}
+              className="text-[13px] font-extrabold tracking-wide text-[#F0442D]"
+            >
+              {publisherName}
+            </Text>
+
+            <View className="mt-1.5 flex-row items-center">
+              {/* Time */}
+
+              <View className="flex-row items-center rounded-full bg-slate-100 px-2.5 py-1">
+                <Ionicons
+                  name="time-outline"
+                  size={12}
+                  color="#64748B"
+                />
+
+                <Text className="ml-1 text-[10px] font-bold text-slate-600">
+                  {formatPublishedTime(
+                    displayDate,
+                  )}
+                </Text>
+              </View>
+
+              {/* Views */}
+
+              <View className="ml-2 flex-row items-center rounded-full bg-[#FFF1EE] px-2.5 py-1">
+                <Ionicons
+                  name="eye-outline"
+                  size={12}
+                  color="#F0442D"
+                />
+
+                <Text className="ml-1 text-[10px] font-bold text-[#F0442D]">
+                  {formatViews(
+                    item.views ?? 0,
+                  )}{' '}
+                  views
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Save button */}
+
+          <Pressable
+            hitSlop={10}
+            onPress={(event) => {
+              event.stopPropagation();
+
+              void toggleSaved(item);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              itemIsSaved
+                ? 'Remove from saved'
+                : 'Save news'
+            }
+            className="ml-3 h-10 w-10 items-center justify-center rounded-full bg-[#FFF1EE]"
+          >
+            <Ionicons
+              name={
+                itemIsSaved
+                  ? 'bookmark'
+                  : 'bookmark-outline'
+              }
+              size={21}
+              color={
+                itemIsSaved
+                  ? '#F0442D'
+                  : '#667085'
+              }
+            />
+          </Pressable>
+        </View>
+      </View>
     </Pressable>
   );
 }

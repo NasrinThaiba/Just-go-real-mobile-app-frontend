@@ -1,3 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Image,
   Modal,
@@ -5,16 +10,18 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 
 import { ProfileAction } from '@/features/profile/components/ProfileAction';
 import { useProfile } from '@/features/profile/hooks/useProfile';
-import { logoutUser } from '@/features/profile/storage/profileStorage';
+
+import {
+  clearAuthSession,
+} from '@/features/auth/storage/authStorage';
+
+import {
+  clearProfile,
+} from '@/features/profile/storage/profileStorage';
 
 const DEFAULT_AVATAR =
   'https://ui-avatars.com/api/?name=User&background=17336B&color=ffffff';
@@ -23,8 +30,15 @@ export default function ProfileMenu() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const [visible, setVisible] =
-    useState(false);
+  const [
+    visible,
+    setVisible,
+  ] = useState(false);
+
+  const [
+    isLoggingOut,
+    setIsLoggingOut,
+  ] = useState(false);
 
   const {
     profile,
@@ -44,21 +58,27 @@ export default function ProfileMenu() {
         if (!permission.granted) {
           Toast.show({
             type: 'error',
-            text1: 'Permission required',
+            text1:
+              'Permission required',
             text2:
               'Allow gallery access to select a profile image.',
+            position: 'top',
           });
 
           return;
         }
 
         const result =
-          await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-          });
+          await ImagePicker.launchImageLibraryAsync(
+            {
+              mediaTypes: [
+                'images',
+              ],
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            },
+          );
 
         if (result.canceled) {
           return;
@@ -81,6 +101,7 @@ export default function ProfileMenu() {
           text1:
             'Profile photo updated',
           visibilityTime: 1200,
+          position: 'top',
         });
       } catch (error) {
         console.error(
@@ -93,16 +114,34 @@ export default function ProfileMenu() {
           text1: 'Update failed',
           text2:
             'Unable to update profile photo.',
+          position: 'top',
         });
       }
     };
 
   const handleLogout =
     async () => {
+      if (isLoggingOut) {
+        return;
+      }
+
       try {
-        await logoutUser();
+        setIsLoggingOut(true);
+
+        await Promise.all([
+          clearAuthSession(),
+          clearProfile(),
+        ]);
 
         setVisible(false);
+
+        Toast.show({
+          type: 'success',
+          text1:
+            'Logged out successfully',
+          position: 'top',
+          visibilityTime: 1000,
+        });
 
         router.replace(
           '/auth/login',
@@ -116,7 +155,12 @@ export default function ProfileMenu() {
         Toast.show({
           type: 'error',
           text1: 'Logout failed',
+          text2:
+            'Unable to clear your login session.',
+          position: 'top',
         });
+      } finally {
+        setIsLoggingOut(false);
       }
     };
 
@@ -126,6 +170,8 @@ export default function ProfileMenu() {
         onPress={() =>
           setVisible(true)
         }
+        accessibilityRole="button"
+        accessibilityLabel="Open profile menu"
         className="h-11 w-11 overflow-hidden rounded-full border-2 border-white bg-white"
       >
         <Image
@@ -161,6 +207,9 @@ export default function ProfileMenu() {
               onPress={() =>
                 setVisible(false)
               }
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Close profile menu"
               className="absolute right-4 top-4 z-20 h-8 w-8 items-center justify-center rounded-full bg-white/10"
             >
               <Ionicons
@@ -268,13 +317,23 @@ export default function ProfileMenu() {
               />
 
               <ProfileAction
-                icon="log-out-outline"
-                label={t(
-                  'profile.logout',
-                )}
+                icon={
+                  isLoggingOut
+                    ? 'hourglass-outline'
+                    : 'log-out-outline'
+                }
+                label={
+                  isLoggingOut
+                    ? 'Logging out...'
+                    : t(
+                        'profile.logout',
+                      )
+                }
                 destructive
                 onPress={() => {
-                  void handleLogout();
+                  if (!isLoggingOut) {
+                    void handleLogout();
+                  }
                 }}
               />
             </View>

@@ -11,9 +11,7 @@ export function formatDate(
       ? value
       : new Date(value);
 
-  if (
-    Number.isNaN(date.getTime())
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return '';
   }
 
@@ -38,9 +36,7 @@ export function formatDateTime(
       ? value
       : new Date(value);
 
-  if (
-    Number.isNaN(date.getTime())
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return '';
   }
 
@@ -67,24 +63,19 @@ export function formatRelativeDate(
       ? value
       : new Date(value);
 
-  if (
-    Number.isNaN(date.getTime())
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return '';
   }
 
-  const now = new Date();
-
-  const differenceInSeconds =
+  const differenceInSeconds = Math.max(
     Math.floor(
-      (now.getTime() -
-        date.getTime()) /
+      (Date.now() - date.getTime()) /
         1000,
-    );
+    ),
+    0,
+  );
 
-  if (
-    differenceInSeconds < 60
-  ) {
+  if (differenceInSeconds < 60) {
     return language === 'ta'
       ? 'சற்றுமுன்'
       : 'Just now';
@@ -95,12 +86,14 @@ export function formatRelativeDate(
       differenceInSeconds / 60,
     );
 
-  if (
-    differenceInMinutes < 60
-  ) {
-    return language === 'ta'
-      ? `${differenceInMinutes} நிமிடங்களுக்கு முன்`
-      : `${differenceInMinutes} min ago`;
+  if (differenceInMinutes < 60) {
+    if (language === 'ta') {
+      return `${differenceInMinutes} நிமிடங்களுக்கு முன்`;
+    }
+
+    return differenceInMinutes === 1
+      ? '1 min ago'
+      : `${differenceInMinutes} mins ago`;
   }
 
   const differenceInHours =
@@ -108,24 +101,32 @@ export function formatRelativeDate(
       differenceInMinutes / 60,
     );
 
-  if (
-    differenceInHours < 24
-  ) {
-    return language === 'ta'
-      ? `${differenceInHours} மணி நேரத்திற்கு முன்`
-      : `${differenceInHours} hr ago`;
+  // 24 hours complete ஆகும் வரை hours மட்டும்
+  if (differenceInHours < 24) {
+    if (language === 'ta') {
+      return `${differenceInHours} மணி நேரத்திற்கு முன்`;
+    }
+
+    return differenceInHours === 1
+      ? '1 hr ago'
+      : `${differenceInHours} hrs ago`;
   }
 
+  // 24 hours complete ஆன பிறகு days
   const differenceInDays =
     Math.floor(
       differenceInHours / 24,
     );
 
-  if (
-    differenceInDays < 7
-  ) {
-    return language === 'ta'
-      ? `${differenceInDays} நாட்களுக்கு முன்`
+  if (differenceInDays < 7) {
+    if (language === 'ta') {
+      return differenceInDays === 1
+        ? '1 நாளுக்கு முன்'
+        : `${differenceInDays} நாட்களுக்கு முன்`;
+    }
+
+    return differenceInDays === 1
+      ? '1 day ago'
       : `${differenceInDays} days ago`;
   }
 

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type {
   ContentInteraction,
+  InteractionUser,
   StoredComment,
 } from '@/features/interactions/types/interaction.types';
 
@@ -53,7 +54,9 @@ async function saveAllInteractions(
 ): Promise<void> {
   await AsyncStorage.setItem(
     INTERACTIONS_KEY,
-    JSON.stringify(interactions),
+    JSON.stringify(
+      interactions,
+    ),
   );
 }
 
@@ -65,7 +68,9 @@ export async function getContentInteraction(
 
   return (
     interactions[contentId] ??
-    createDefaultInteraction(contentId)
+    createDefaultInteraction(
+      contentId,
+    )
   );
 }
 
@@ -77,7 +82,9 @@ export async function toggleStoredFavorite(
 
   const current =
     interactions[contentId] ??
-    createDefaultInteraction(contentId);
+    createDefaultInteraction(
+      contentId,
+    );
 
   const updated: ContentInteraction = {
     ...current,
@@ -103,7 +110,9 @@ export async function toggleStoredBookmark(
 
   const current =
     interactions[contentId] ??
-    createDefaultInteraction(contentId);
+    createDefaultInteraction(
+      contentId,
+    );
 
   const updated: ContentInteraction = {
     ...current,
@@ -124,20 +133,38 @@ export async function toggleStoredBookmark(
 export async function addStoredComment(
   contentId: string,
   message: string,
-  author = 'Local User',
+  currentUser: InteractionUser,
 ): Promise<ContentInteraction> {
+  const trimmedMessage =
+    message.trim();
+
+  if (!trimmedMessage) {
+    throw new Error(
+      'Comment cannot be empty',
+    );
+  }
+
   const interactions =
     await getAllInteractions();
 
   const current =
     interactions[contentId] ??
-    createDefaultInteraction(contentId);
+    createDefaultInteraction(
+      contentId,
+    );
 
-  const comment: StoredComment = {
-    id: `comment-${Date.now()}`,
-    contentId,
-    message: message.trim(),
-    author,
+  const newComment: StoredComment = {
+    id: `${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}`,
+    author:
+      currentUser.name,
+    authorId:
+      currentUser.id,
+    authorRole:
+      currentUser.role,
+    message:
+      trimmedMessage,
     createdAt:
       new Date().toISOString(),
   };
@@ -145,8 +172,8 @@ export async function addStoredComment(
   const updated: ContentInteraction = {
     ...current,
     comments: [
-      comment,
       ...current.comments,
+      newComment,
     ],
   };
 
@@ -163,20 +190,51 @@ export async function addStoredComment(
 export async function deleteStoredComment(
   contentId: string,
   commentId: string,
+  currentUser: InteractionUser,
 ): Promise<ContentInteraction> {
   const interactions =
     await getAllInteractions();
 
   const current =
     interactions[contentId] ??
-    createDefaultInteraction(contentId);
+    createDefaultInteraction(
+      contentId,
+    );
+
+  const selectedComment =
+    current.comments.find(
+      (comment) =>
+        comment.id ===
+        commentId,
+    );
+
+  if (!selectedComment) {
+    throw new Error(
+      'Comment not found',
+    );
+  }
+
+  const isOwner =
+    selectedComment.authorId ===
+    currentUser.id;
+
+  const isAdmin =
+    currentUser.role ===
+    'admin';
+
+  if (!isOwner && !isAdmin) {
+    throw new Error(
+      'You cannot delete this comment',
+    );
+  }
 
   const updated: ContentInteraction = {
     ...current,
     comments:
       current.comments.filter(
         (comment) =>
-          comment.id !== commentId,
+          comment.id !==
+          commentId,
       ),
   };
 
@@ -188,4 +246,10 @@ export async function deleteStoredComment(
   );
 
   return updated;
+}
+
+export async function clearStoredInteractions(): Promise<void> {
+  await AsyncStorage.removeItem(
+    INTERACTIONS_KEY,
+  );
 }

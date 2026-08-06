@@ -1,8 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import {
   Pressable,
   Text,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 type CommentButtonProps = {
   count: number;
@@ -17,17 +18,57 @@ export function CommentButton({
     <Pressable
       onPress={onPress}
       hitSlop={8}
-      className="flex-row items-center active:opacity-60"
+      accessibilityRole="button"
+      accessibilityLabel={`Open ${count} comments`}
+      className="flex-row items-center rounded-full px-2 py-2 active:opacity-60"
     >
       <Ionicons
         name="chatbubble-outline"
-        size={21}
+        size={20}
         color="#121826"
       />
 
-      <Text className="ml-2 text-sm font-bold text-textMain">
-        {count}
-      </Text>
+      <View className="ml-2 flex-row items-center">
+        <Text className="text-sm font-black text-textMain">
+          Comments
+        </Text>
+
+        <Text className="ml-1.5 text-sm font-semibold text-textMuted">
+          {formatCommentCount(count)}
+        </Text>
+      </View>
     </Pressable>
+  );
+}
+
+function formatCommentCount(
+  count: number,
+): string {
+  const safeCount =
+    Number.isFinite(count) &&
+    count > 0
+      ? count
+      : 0;
+
+  if (safeCount >= 1_000_000) {
+    return `${Number(
+      (
+        safeCount /
+        1_000_000
+      ).toFixed(1),
+    )}M`;
+  }
+
+  if (safeCount >= 1_000) {
+    return `${Number(
+      (
+        safeCount /
+        1_000
+      ).toFixed(1),
+    )}K`;
+  }
+
+  return String(
+    Math.floor(safeCount),
   );
 }

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const AUTH_STORAGE_KEY =
-  '@just-go-real/auth';
+const AUTH_SESSION_KEY =
+  '@just_go_real/auth_session';
 
 export type AuthSession = {
   isAuthenticated: boolean;
@@ -10,25 +10,52 @@ export type AuthSession = {
   loggedInAt: string;
 };
 
-export async function getAuthSession(): Promise<
-  AuthSession | null
-> {
+export async function saveAuthSession(
+  session: AuthSession,
+): Promise<void> {
+  await AsyncStorage.setItem(
+    AUTH_SESSION_KEY,
+    JSON.stringify(session),
+  );
+}
+
+export async function getAuthSession(): Promise<AuthSession | null> {
   try {
-    const storedValue =
+    const storedSession =
       await AsyncStorage.getItem(
-        AUTH_STORAGE_KEY,
+        AUTH_SESSION_KEY,
       );
 
-    if (!storedValue) {
+    if (!storedSession) {
       return null;
     }
 
-    return JSON.parse(
-      storedValue,
-    ) as AuthSession;
+    const parsedSession =
+      JSON.parse(
+        storedSession,
+      ) as Partial<AuthSession>;
+
+    if (
+      !parsedSession.isAuthenticated ||
+      !parsedSession.userId ||
+      !parsedSession.phone
+    ) {
+      return null;
+    }
+
+    return {
+      isAuthenticated: true,
+      userId:
+        parsedSession.userId,
+      phone:
+        parsedSession.phone,
+      loggedInAt:
+        parsedSession.loggedInAt ??
+        new Date().toISOString(),
+    };
   } catch (error) {
     console.error(
-      'Failed to load auth session:',
+      'Failed to get auth session:',
       error,
     );
 
@@ -36,27 +63,18 @@ export async function getAuthSession(): Promise<
   }
 }
 
-export async function saveAuthSession(
-  session: AuthSession,
-): Promise<void> {
-  await AsyncStorage.setItem(
-    AUTH_STORAGE_KEY,
-    JSON.stringify(session),
+export async function isUserAuthenticated(): Promise<boolean> {
+  const session =
+    await getAuthSession();
+
+  return Boolean(
+    session?.isAuthenticated &&
+      session.userId,
   );
 }
 
 export async function clearAuthSession(): Promise<void> {
   await AsyncStorage.removeItem(
-    AUTH_STORAGE_KEY,
-  );
-}
-
-export async function isAuthenticated(): Promise<boolean> {
-  const session =
-    await getAuthSession();
-
-  return (
-    session?.isAuthenticated ===
-    true
+    AUTH_SESSION_KEY,
   );
 }

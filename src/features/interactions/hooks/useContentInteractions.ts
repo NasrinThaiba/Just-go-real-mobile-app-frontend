@@ -14,6 +14,7 @@ import {
 
 import type {
   ContentInteraction,
+  InteractionUser,
 } from '@/features/interactions/types/interaction.types';
 
 function createDefaultInteraction(
@@ -29,16 +30,21 @@ function createDefaultInteraction(
 
 export function useContentInteractions(
   contentId: string,
+  currentUser: InteractionUser | null,
 ) {
   const [
     interaction,
     setInteraction,
   ] = useState<ContentInteraction>(
-    createDefaultInteraction(contentId),
+    createDefaultInteraction(
+      contentId,
+    ),
   );
 
-  const [isLoading, setIsLoading] =
-    useState(true);
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
 
   const loadInteraction =
     useCallback(async () => {
@@ -96,18 +102,30 @@ export function useContentInteractions(
 
   const addComment =
     useCallback(
-      async (message: string) => {
+      async (
+        message: string,
+      ) => {
+        if (!currentUser) {
+          throw new Error(
+            'Please login to comment',
+          );
+        }
+
         const result =
           await addStoredComment(
             contentId,
             message,
+            currentUser,
           );
 
         setInteraction(result);
 
         return result;
       },
-      [contentId],
+      [
+        contentId,
+        currentUser,
+      ],
     );
 
   const deleteComment =
@@ -115,17 +133,27 @@ export function useContentInteractions(
       async (
         commentId: string,
       ) => {
+        if (!currentUser) {
+          throw new Error(
+            'Please login to delete this comment',
+          );
+        }
+
         const result =
           await deleteStoredComment(
             contentId,
             commentId,
+            currentUser,
           );
 
         setInteraction(result);
 
         return result;
       },
-      [contentId],
+      [
+        contentId,
+        currentUser,
+      ],
     );
 
   return {
@@ -135,6 +163,7 @@ export function useContentInteractions(
     toggleBookmark,
     addComment,
     deleteComment,
-    refetch: loadInteraction,
+    refetch:
+      loadInteraction,
   };
 }
