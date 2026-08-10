@@ -914,10 +914,35 @@ export default function CreateVideoScreen() {
       );
     };
 
+  const handleVideoTypeChange = (
+    value: VideoType,
+  ) => {
+    setVideoType(value);
+
+    if (value === 'live') {
+      setVideoSource('youtube');
+      setVideoUri(null);
+    }
+  };
+
   const selectVideoSource =
     (
       source: VideoSourceValue,
     ) => {
+      if (
+        videoType === 'live' &&
+        source === 'direct'
+      ) {
+        Toast.show({
+          type: 'error',
+          text1: 'YouTube required',
+          text2:
+            'Live videos must use a YouTube live URL.',
+        });
+
+        return;
+      }
+
       setVideoSource(source);
 
       if (
@@ -942,6 +967,20 @@ export default function CreateVideoScreen() {
 
   const validateForPublish =
     () => {
+      if (
+        videoType === 'live' &&
+        videoSource !== 'youtube'
+      ) {
+        Toast.show({
+          type: 'error',
+          text1: 'YouTube required',
+          text2:
+            'Live videos must use a YouTube live URL.',
+        });
+
+        return false;
+      }
+
       const checks = [
         [
           title.trim(),
@@ -1218,6 +1257,20 @@ export default function CreateVideoScreen() {
           </Text>
         </Text>
 
+        {videoType === 'live' ? (
+          <View className="mb-3 flex-row items-center rounded-2xl bg-red-50 px-4 py-3">
+            <Ionicons
+              name="radio-outline"
+              size={18}
+              color="#F0442D"
+            />
+
+            <Text className="ml-2 flex-1 text-sm font-semibold text-red-700">
+              Live videos use a YouTube live URL.
+            </Text>
+          </View>
+        ) : null}
+
         <View className="flex-row gap-3">
           <Pressable
             onPress={() =>
@@ -1225,11 +1278,20 @@ export default function CreateVideoScreen() {
                 'direct',
               )
             }
+            disabled={
+              videoType === 'live'
+            }
+            accessibilityState={{
+              disabled:
+                videoType === 'live',
+            }}
             className={`flex-1 items-center rounded-2xl border px-4 py-4 active:opacity-70 ${
-              videoSource ===
-              'direct'
-                ? 'border-primary bg-primarySoft'
-                : 'border-borderSoft bg-slate-50'
+              videoType === 'live'
+                ? 'border-slate-200 bg-slate-100 opacity-50'
+                : videoSource ===
+                    'direct'
+                  ? 'border-primary bg-primarySoft'
+                  : 'border-borderSoft bg-slate-50'
             }`}
           >
             <Ionicons
@@ -1534,7 +1596,7 @@ export default function CreateVideoScreen() {
                   option.icon
                 }
                 onPress={
-                  setVideoType
+                  handleVideoTypeChange
                 }
               />
             ),

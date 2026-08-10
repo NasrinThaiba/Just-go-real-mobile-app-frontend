@@ -100,13 +100,32 @@ export default function VideoScreen() {
     useState(false);
 
   const publishedVideos =
-    useMemo(() => {
-      return items.filter(
+  useMemo(() => {
+    return items
+      .filter(
         (item) =>
           item.type === 'video' &&
           item.status === 'published',
-      );
-    }, [items]);
+      )
+      .sort((first, second) => {
+        const firstDate =
+          first.publishedAt ??
+          first.createdAt;
+
+        const secondDate =
+          second.publishedAt ??
+          second.createdAt;
+
+        return (
+          new Date(
+            secondDate,
+          ).getTime() -
+          new Date(
+            firstDate,
+          ).getTime()
+        );
+      });
+  }, [items]);
 
   const filteredVideos =
     useMemo(() => {

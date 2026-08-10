@@ -1,5 +1,3 @@
-// src/features/admin/hooks/useAdminPosts.ts
-
 import {
   useCallback,
   useEffect,
@@ -32,25 +30,11 @@ export type AdminPostFilter =
   | 'unpublished';
 
 export function useAdminPosts() {
-  const [items, setItems] =
-    useState<FeedItem[]>([]);
-
-  const [filter, setFilter] =
-    useState<AdminPostFilter>(
-      'pending',
-    );
-
-  const [isLoading, setIsLoading] =
-    useState(true);
-
-  const [
-    isRefreshing,
-    setIsRefreshing,
-  ] = useState(false);
-
-  const [error, setError] =
-    useState<string | null>(null);
-
+  const [items, setItems] = useState<FeedItem[]>([]);
+  const [filter, setFilter] = useState<AdminPostFilter>('pending');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const loadPosts = useCallback(
     async (
       refreshing = false,
@@ -61,7 +45,6 @@ export function useAdminPosts() {
         } else {
           setIsLoading(true);
         }
-
         setError(null);
 
         const [
@@ -82,24 +65,12 @@ export function useAdminPosts() {
               second,
             ) => {
               const firstDate =
-                new Date(
-                  first.createdAt ??
-                    0,
-                ).getTime();
-
+                new Date(first.createdAt ?? 0).getTime();
               const secondDate =
-                new Date(
-                  second.createdAt ??
-                    0,
-                ).getTime();
-
-              return (
-                secondDate -
-                firstDate
-              );
+                new Date(second.createdAt ?? 0).getTime();
+              return (secondDate - firstDate);
             },
           );
-
         setItems(mergedItems);
       } catch (loadError) {
         console.error(

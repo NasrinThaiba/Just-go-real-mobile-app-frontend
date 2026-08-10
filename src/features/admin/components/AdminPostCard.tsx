@@ -1,5 +1,3 @@
-// src/features/admin/components/AdminPostCard.tsx
-
 import {
   Image,
   Pressable,
@@ -108,7 +106,6 @@ export function AdminPostCard({
           id: item.id,
         },
       });
-
       return;
     }
 

@@ -7,8 +7,9 @@ import Toast from 'react-native-toast-message';
 import { FavoriteButton } from '@/components/interactions/FavoriteButton';
 import { CommentButton } from '@/components/interactions/CommentButton';
 import { ShareButton } from '@/components/interactions/ShareButton';
-import { CommentsModal } from '@/components/interactions/CommentsModal';
+import { InlineComments } from '@/components/interactions/InlineComments';
 
+import { useCurrentInteractionUser } from '@/features/auth/hooks/useCurrentInteractionUser';
 import { useContentInteractions } from '@/features/interactions/hooks/useContentInteractions';
 
 type ContentActionsProps = {
@@ -28,10 +29,12 @@ export function ContentActions({
   language,
   shareUrl,
 }: ContentActionsProps) {
-  const [
-    commentsVisible,
-    setCommentsVisible,
-  ] = useState(false);
+  const [ showComments,setShowComments ] = useState(false);
+  const {
+    currentUser,
+    isLoading:
+      isCurrentUserLoading,
+  } = useCurrentInteractionUser();
 
   const {
     interaction,
@@ -40,6 +43,7 @@ export function ContentActions({
     deleteComment,
   } = useContentInteractions(
     contentId,
+    currentUser,
   );
 
   const totalLikes =
@@ -51,9 +55,7 @@ export function ContentActions({
   const handleFavorite =
     async () => {
       try {
-        const updated =
-          await toggleFavorite();
-
+        const updated = await toggleFavorite();
         Toast.show({
           type: 'success',
           text1:
@@ -61,63 +63,58 @@ export function ContentActions({
               ? 'Added to favorites'
               : 'Removed from favorites',
           position: 'top',
+          visibilityTime: 1200,
         });
       } catch (error) {
-        console.error(
-          'Favorite failed:',
-          error,
-        );
+        console.error('Favorite failed:', error);
+
+        Toast.show({
+          type: 'error',
+          text1:
+            'Unable to update favorite',
+          position: 'top',
+        });
       }
     };
 
   return (
-    <>
-      <View className="mt-8 flex-row items-center justify-between border-t border-borderSoft pt-5">
+    <View>
+      <View className="flex-row items-center justify-between">
         <FavoriteButton
-          selected={
-            interaction.isFavorite
-          }
-          count={totalLikes}
+          selected={ interaction.isFavorite}
+          count={ totalLikes }
           onPress={() =>
             void handleFavorite()
           }
         />
 
         <CommentButton
-          count={
-            interaction.comments
-              .length
-          }
+          count={interaction.comments.length}
           onPress={() =>
-            setCommentsVisible(true)
+            setShowComments(
+              (current) => !current,
+            )
           }
         />
 
         <ShareButton
           title={title}
-          description={
-            description
-          }
+          description={description}
           url={shareUrl}
         />
       </View>
 
-      <CommentsModal
-        visible={commentsVisible}
-        comments={
-          interaction.comments
-        }
-        language={language}
-        onClose={() =>
-          setCommentsVisible(false)
-        }
-        onAddComment={
-          addComment
-        }
-        onDeleteComment={
-          deleteComment
-        }
-      />
-    </>
+      {showComments ? (
+        <InlineComments
+          comments={interaction.comments}
+          language={language}
+          currentUserId={currentUser?.id}
+          isAdmin={currentUser?.role === 'admin'}
+          isUserLoading={isCurrentUserLoading}
+          onAddComment={addComment}
+          onDeleteComment={deleteComment}
+        />
+      ) : null}
+    </View>
   );
 }

@@ -14,20 +14,11 @@ import {
   useState,
 } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  useLocalSearchParams,
-  useRouter,
-} from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-
-import {
-  useAdminPosts,
-} from '@/features/admin/hooks/useAdminPosts';
-
-import type {
-  FeedItem,
-} from '@/features/news/types/news.types';
+import { useAdminPosts } from '@/features/admin/hooks/useAdminPosts';
+import type { FeedItem } from '@/features/news/types/news.types';
 
 export default function AdminPostReviewPage() {
   const router = useRouter();

@@ -1,5 +1,3 @@
-// src/features/admin/components/AdminDashboardPage.tsx
-
 import {
   ActivityIndicator,
   Pressable,
@@ -10,7 +8,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { useAdminPosts } from '@/features/admin/hooks/useAdminPosts';
 
 export default function AdminDashboardPage() {

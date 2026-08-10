@@ -1,8 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import {
   Pressable,
   Text,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 type FavoriteButtonProps = {
   selected: boolean;
@@ -17,12 +17,29 @@ export function FavoriteButton({
   onPress,
   disabled = false,
 }: FavoriteButtonProps) {
+  const displayCount =
+    Math.max(0, count);
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       hitSlop={8}
-      className="flex-row items-center active:opacity-60"
+      accessibilityRole="button"
+      accessibilityLabel={
+        selected
+          ? `Remove from favorites. ${displayCount} favorites`
+          : `Add to favorites. ${displayCount} favorites`
+      }
+      accessibilityState={{
+        selected,
+        disabled,
+      }}
+      className={`flex-row items-center rounded-full px-2 py-1 active:opacity-60 ${
+        disabled
+          ? 'opacity-40'
+          : ''
+      }`}
     >
       <Ionicons
         name={
@@ -45,7 +62,7 @@ export function FavoriteButton({
             : 'text-textMain'
         }`}
       >
-        {count}
+        {displayCount}
       </Text>
     </Pressable>
   );

@@ -117,47 +117,33 @@ export default function AdminPostApprovalsPage() {
         <FlatList
           horizontal
           data={FILTERS}
-          keyExtractor={(
-            item,
-          ) => item.value}
-          showsHorizontalScrollIndicator={
-            false
-          }
-          contentContainerStyle={{
-            gap: 8,
-          }}
+          keyExtractor={(item) => item.value}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{gap: 8}}
           renderItem={({
             item,
           }) => {
             const isSelected =
-              filter ===
-              item.value;
+              filter === item.value;
 
-            let count =
-              summary.total;
+            let count = summary.total;
 
             if (
-              item.value ===
-              'pending'
+              item.value === 'pending'
             ) {
-              count =
-                summary.pending;
+              count = summary.pending;
             }
 
             if (
-              item.value ===
-              'published'
+              item.value === 'published'
             ) {
-              count =
-                summary.published;
+              count = summary.published;
             }
 
             if (
-              item.value ===
-              'rejected'
+              item.value === 'rejected'
             ) {
-              count =
-                summary.rejected;
+              count = summary.rejected;
             }
 
             return (
@@ -166,7 +152,7 @@ export default function AdminPostApprovalsPage() {
                   setFilter(
                     item.value,
                   )
-                }
+                 }
                 className={`flex-row items-center rounded-xl px-4 py-2.5 ${
                   isSelected
                     ? 'bg-primary'

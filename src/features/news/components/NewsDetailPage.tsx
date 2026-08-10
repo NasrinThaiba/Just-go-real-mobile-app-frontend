@@ -155,7 +155,7 @@ function ArticleContent({
         ? item.newsType.toUpperCase()
         : categoryLabel;
 
-  const totalLikes =
+  const totalFavorites =
     (item.likes ?? 0) +
     (interaction.isFavorite
       ? 1
@@ -338,9 +338,7 @@ function ArticleContent({
 
             {item.description ? (
               <Text className="mt-6 text-base leading-8 text-slate-700">
-                {
-                  item.description
-                }
+                { item.description}
               </Text>
             ) : null}
 
@@ -351,7 +349,9 @@ function ArticleContent({
                 selected={
                   interaction.isFavorite
                 }
-                count={totalLikes}
+                count={
+                  totalFavorites
+                }
                 onPress={() =>
                   void handleFavorite()
                 }
@@ -382,28 +382,13 @@ function ArticleContent({
 
             {showComments ? (
               <InlineComments
-                comments={
-                  interaction.comments
-                }
-                language={
-                  appLanguage
-                }
-                currentUserId={
-                  currentUser?.id
-                }
-                isAdmin={
-                  currentUser?.role ===
-                  'admin'
-                }
-                isUserLoading={
-                  isCurrentUserLoading
-                }
-                onAddComment={
-                  addComment
-                }
-                onDeleteComment={
-                  deleteComment
-                }
+                comments={ interaction.comments }
+                language={ appLanguage }
+                currentUserId={currentUser?.id}
+                isAdmin={currentUser?.role === 'admin'}
+                isUserLoading={isCurrentUserLoading}
+                onAddComment={addComment}
+                onDeleteComment={deleteComment}
               />
             ) : null}
           </View>

@@ -212,7 +212,11 @@ function DirectVideoScreen({
   } = useContentInteractions( item.id, currentUser );
 
   const displayDate = item.publishedAt ?? item.createdAt;
-  const totalLikes = (item.likes ?? 0) + (interaction.isFavorite ? 1 : 0);
+  const totalFavorites =
+  (item.likes ?? 0) +
+  (interaction.isFavorite
+    ? 1
+    : 0);
 
   const isYouTubeVideo =
     item.videoSource === 'youtube' &&
@@ -421,8 +425,10 @@ function DirectVideoScreen({
             <View className="mt-8 flex-row items-center justify-between border-t border-borderSoft pt-5">
               <FavoriteButton
                 selected={interaction.isFavorite}
-                count={totalLikes}
-                onPress={() =>void handleFavorite()}
+                count={totalFavorites}
+                onPress={() =>
+                  void handleFavorite()
+                }
               />
 
               <CommentButton

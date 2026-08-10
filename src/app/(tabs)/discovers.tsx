@@ -417,7 +417,7 @@ export default function DiscoversScreen() {
   };
 
   const openAllLiveVideos = () => {
-    router.push('/video');
+    router.push('/live-video');
   };
 
   const selectTopic = (

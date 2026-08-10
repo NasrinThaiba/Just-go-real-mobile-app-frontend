@@ -1,5 +1,3 @@
-// src/features/admin/components/AdminUsersPage.tsx
-
 import {
   Alert,
   FlatList,
@@ -31,22 +29,18 @@ const USERS: AdminUser[] = [
   {
     id: 'admin-1',
     name: 'Admin User',
-    email:
-      'admin@justgoreal.com',
+    email: 'admin@justgoreal.com',
     role: 'admin',
     status: 'active',
-    avatar:
-      'https://ui-avatars.com/api/?name=Admin+User&background=17336B&color=ffffff',
+    avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=17336B&color=ffffff',
   },
   {
     id: 'user-1',
     name: 'Reporter User',
-    email:
-      'reporter@justgoreal.com',
+    email: 'reporter@justgoreal.com',
     role: 'reporter',
     status: 'active',
-    avatar:
-      'https://ui-avatars.com/api/?name=Reporter+User&background=F0442D&color=ffffff',
+    avatar: 'https://ui-avatars.com/api/?name=Reporter+User&background=F0442D&color=ffffff',
   },
 ];
 
@@ -68,10 +62,7 @@ export default function AdminUsersPage() {
           text: 'Block',
           style: 'destructive',
           onPress: () => {
-            console.log(
-              'Block user:',
-              user.id,
-            );
+            console.log( 'Block user:', user.id );
           },
         },
       ],

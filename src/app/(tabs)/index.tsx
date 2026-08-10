@@ -148,9 +148,20 @@ export default function HomeScreen() {
     sportsNews,
   ]);
 
-  const openNews = (
+  const openContent = (
     item: FeedItem,
   ) => {
+    if (item.type === 'video') {
+      router.push({
+        pathname: '/video/[id]',
+        params: {
+          id: item.id,
+        },
+      });
+
+      return;
+    }
+
     router.push({
       pathname: '/article/[id]',
       params: {
@@ -344,7 +355,7 @@ export default function HomeScreen() {
                     appLanguage
                   }
                   onPress={() =>
-                    openNews(item)
+                    openContent(item)
                   }
                 />
               ),
