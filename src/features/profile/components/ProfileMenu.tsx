@@ -4,11 +4,11 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  View,
+    Image,
+    Modal,
+    Pressable,
+    Text,
+    View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
@@ -16,11 +16,11 @@ import { ProfileAction } from '@/features/profile/components/ProfileAction';
 import { useProfile } from '@/features/profile/hooks/useProfile';
 
 import {
-  clearAuthSession,
-} from '@/features/auth/storage/authStorage';
+    clearAuthSession,
+} from '@/features/auth/storage/auth.storage';
 
 import {
-  clearProfile,
+    clearProfile,
 } from '@/features/profile/storage/profileStorage';
 
 const DEFAULT_AVATAR =

@@ -1,5 +1,7 @@
 // src/app/auth/login.tsx
 
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import {
   forwardRef,
   useEffect,
@@ -17,14 +19,21 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import {
   saveAuthSession,
-} from '@/features/auth/storage/authStorage';
+  saveTokens,
+} from '@/features/auth/storage/auth.storage';
+
+import {
+  useRequestOtp,
+} from '@/features/auth/hooks/useRequestOtp';
+
+import {
+  useVerifyOtp,
+} from '@/features/auth/hooks/useVerifyOtp';
 
 import {
   saveProfile,
@@ -35,8 +44,6 @@ import type {
   UserProfile,
 } from '@/features/profile/types/profile.types';
 
-const DEMO_OTP = '123456';
-const ADMIN_PHONE = '9876543210';
 const RESEND_SECONDS = 30;
 
 type LoginStep =
@@ -87,6 +94,9 @@ function formatTimer(
 
 export default function LoginScreen() {
   const router = useRouter();
+
+  const requestOtpMutation = useRequestOtp();
+  const verifyOtpMutation = useVerifyOtp();
 
   const otpInputRef =
     useRef<TextInput>(null);
@@ -164,15 +174,10 @@ export default function LoginScreen() {
       try {
         setIsLoading(true);
 
-        // Replace with backend API later.
-        await new Promise<void>(
-          (resolve) => {
-            setTimeout(
-              resolve,
-              600,
-            );
-          },
-        );
+        const response =
+          await requestOtpMutation.mutateAsync(
+            normalizedPhone,
+          );
 
         setOtp('');
         setResendSeconds(
@@ -188,7 +193,9 @@ export default function LoginScreen() {
           type: 'success',
           text1: 'OTP sent',
           text2:
-            'Use 123456 for testing.',
+            response.data.otp
+              ? `OTP: ${response.data.otp}`
+              : 'OTP sent successfully.',
           position: 'top',
           visibilityTime: 1800,
         });
@@ -202,6 +209,11 @@ export default function LoginScreen() {
           type: 'error',
           text1:
             'Unable to send OTP',
+          text2:
+            error instanceof Error
+              ? error.message
+              : 'Please try again.',
+          position: 'top',
         });
       } finally {
         setIsLoading(false);
@@ -225,65 +237,53 @@ export default function LoginScreen() {
       try {
         setIsLoading(true);
 
-        if (otp !== DEMO_OTP) {
-          Toast.show({
-            type: 'error',
-            text1: 'Incorrect OTP',
-            text2:
-              'Use 123456 for testing.',
-            position: 'top',
+        const response =
+          await verifyOtpMutation.mutateAsync({
+            phone: normalizedPhone,
+            otp,
           });
 
-          return;
-        }
-
-        const role: ProfileRole =
-          normalizedPhone ===
-          ADMIN_PHONE
-            ? 'admin'
-            : 'reader';
-
-        const userId =
-          `${role}-${normalizedPhone}`;
-
-        const profile: UserProfile =
-          {
-            id: userId,
-            name:
-              role === 'admin'
-                ? 'Admin User'
-                : 'Reader User',
-            phone:
-              normalizedPhone,
-            email: '',
-            role,
-            profileImage: '',
-            locationName:
-              'Tamil Nadu',
-          };
+        const {
+          accessToken,
+          refreshToken,
+          user,
+        } = response.data;
 
         await Promise.all([
+          saveTokens(
+            accessToken,
+            refreshToken,
+          ),
+
           saveAuthSession({
-            isAuthenticated:
-              true,
-            userId,
-            phone:
-              normalizedPhone,
+            isAuthenticated: true,
+            userId: user.id,
+            phone: user.phone,
             loggedInAt:
               new Date().toISOString(),
           }),
 
-          saveProfile(profile),
+          saveProfile({
+            id: user.id,
+            name: user.name,
+            phone: user.phone,
+            email: user.email,
+            role: user.role,
+            profileImage:
+              user.profileImage,
+            locationName:
+              'Tamil Nadu',
+          }),
         ]);
 
         Toast.show({
           type: 'success',
           text1:
-            role === 'admin'
+            user.role === 'admin'
               ? 'Admin login successful'
               : 'Login successful',
           text2:
-            role === 'admin'
+            user.role === 'admin'
               ? 'Admin access enabled.'
               : 'Logged in as Reader.',
           position: 'top',
@@ -301,7 +301,10 @@ export default function LoginScreen() {
           type: 'error',
           text1: 'Login failed',
           text2:
-            'Unable to complete sign in.',
+            error instanceof Error
+              ? error.message
+              : 'Unable to complete sign in.',
+          position: 'top',
         });
       } finally {
         setIsLoading(false);
