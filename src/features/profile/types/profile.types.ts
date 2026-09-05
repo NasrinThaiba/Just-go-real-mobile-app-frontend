@@ -1,20 +1,47 @@
-// src/features/profile/types/profile.types.ts
-
 export type ProfileRole =
   | 'reader'
-  | 'reporter'
-  | 'editor'
   | 'admin';
 
 export type UserProfile = {
   id: string;
+
   name: string;
+
   phone: string;
+
   email: string;
-  role: ProfileRole;
+
   profileImage: string;
-  locationName?: string;
+
+  role: ProfileRole;
+
+  locationName: string;
+
+  createdAt: string;
+
+  updatedAt: string;
 };
 
-export type UpdateProfileInput =
-  Partial<Omit<UserProfile, 'id'>>;
+export type GetProfileResponse = {
+  message: string;
+
+  data: {
+    user: UserProfile;
+  };
+};
+
+export type UpdateProfileInput = {
+  name?: string;
+
+  email?: string;
+
+  profileImage?: string;
+};
+
+export type UpdateProfileResponse = {
+  message: string;
+
+  data: {
+    user: UserProfile;
+  };
+};

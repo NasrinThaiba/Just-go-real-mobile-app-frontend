@@ -47,6 +47,25 @@ export async function apiClient<T>(
 
 
 
+  console.log(
+    "API URL:",
+    `${BASE_URL}${path}`,
+  );
+
+
+  console.log(
+    "METHOD:",
+    options.method ?? "GET",
+  );
+
+
+  console.log(
+    "ACCESS TOKEN:",
+    token,
+  );
+
+
+
   const response =
     await fetch(
 
@@ -75,19 +94,22 @@ export async function apiClient<T>(
 
 
         body:
-
           options.body
-
             ? JSON.stringify(
                 options.body,
               )
-
             : undefined,
-
 
       },
 
     );
+
+
+
+  console.log(
+    "STATUS:",
+    response.status,
+  );
 
 
 
@@ -96,23 +118,24 @@ export async function apiClient<T>(
 
 
 
+  console.log(
+    "RESPONSE:",
+    data,
+  );
+
+
+
   if (!response.ok) {
 
-
     throw new Error(
-
       data.message ??
-
-      "Something went wrong"
-
+      "Something went wrong",
     );
-
 
   }
 
 
 
   return data as T;
-
 
 }

@@ -1,5 +1,3 @@
-// src/features/profile/hooks/useProfile.ts
-
 import {
   useCallback,
   useEffect,
@@ -8,106 +6,181 @@ import {
 
 import {
   getProfile,
+} from '../api/getProfile';
+
+import {
+  updateProfile as updateProfileApi,
+} from '../api/updateProfile';
+
+import {
+  useProfileStore,
+} from '../store/profile.store';
+
+import {
   saveProfile,
-} from '@/features/profile/storage/profileStorage';
+} from '../storage/profileStorage';
 
 import type {
   UpdateProfileInput,
   UserProfile,
-} from '@/features/profile/types/profile.types';
+} from '../types/profile.types';
 
-const DEFAULT_PROFILE: UserProfile = {
-  id: 'local-user',
-  name: 'User',
+
+const EMPTY_PROFILE: UserProfile = {
+  id: '',
+  name: 'New User',
   phone: '',
-  role: 'reader',
+  email: '',
   profileImage: '',
-  locationName: 'Tamil Nadu',
+  role: 'reader',
+  locationName: '',
+  createdAt: '',
+  updatedAt: '',
 };
 
+
 export function useProfile() {
-  const [
-    profile,
-    setProfile,
-  ] =
-    useState<UserProfile>(
-      DEFAULT_PROFILE,
+
+  const profile =
+    useProfileStore(
+      (state) => state.profile,
     );
+
+
+  const setProfile =
+    useProfileStore(
+      (state) => state.setProfile,
+    );
+
 
   const [
     isLoading,
     setIsLoading,
-  ] =
-    useState(true);
+  ] = useState(true);
+
 
   const [
-    error,
-    setError,
-  ] =
-    useState<string | null>(
-      null,
-    );
+    isUpdating,
+    setIsUpdating,
+  ] = useState(false);
+
 
   const loadProfile =
-    useCallback(async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    useCallback(
+      async () => {
 
-        const storedProfile =
-          await getProfile();
+        try {
 
-        setProfile({
-          ...DEFAULT_PROFILE,
-          ...storedProfile,
-        });
-      } catch (loadError) {
-        console.error(
-          'Failed to load profile:',
-          loadError,
-        );
+          setIsLoading(true);
 
-        setError(
-          'Unable to load profile.',
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }, []);
 
-  useEffect(() => {
-    void loadProfile();
-  }, [loadProfile]);
+          const response =
+            await getProfile();
+
+
+          const user =
+            response.data.user;
+
+
+          setProfile(user);
+
+
+          await saveProfile(user);
+
+
+          return user;
+
+        } catch (error) {
+
+          console.error(
+            'Failed to load profile:',
+            error,
+          );
+
+          throw error;
+
+        } finally {
+
+          setIsLoading(false);
+
+        }
+
+      },
+      [setProfile],
+    );
+
 
   const updateProfile =
     useCallback(
       async (
         input: UpdateProfileInput,
       ) => {
-        const updatedProfile: UserProfile =
-          {
-            ...profile,
-            ...input,
-          };
 
-        await saveProfile(
-          updatedProfile,
-        );
+        try {
 
-        setProfile(
-          updatedProfile,
-        );
+          setIsUpdating(true);
 
-        return updatedProfile;
+
+          const response =
+            await updateProfileApi(
+              input,
+            );
+
+
+          const user =
+            response.data.user;
+
+
+          setProfile(user);
+
+
+          await saveProfile(user);
+
+
+          return user;
+
+        } finally {
+
+          setIsUpdating(false);
+
+        }
+
       },
-      [profile],
+      [setProfile],
     );
 
-  return {
+
+  useEffect(() => {
+
+    if (!profile) {
+
+      void loadProfile();
+
+    } else {
+
+      setIsLoading(false);
+
+    }
+
+  }, [
     profile,
+    loadProfile,
+  ]);
+
+
+  return {
+
+    profile:
+      profile ?? EMPTY_PROFILE,
+
     isLoading,
-    error,
+
+    isUpdating,
+
+    loadProfile,
+
     updateProfile,
-    refetch: loadProfile,
+
   };
+
 }

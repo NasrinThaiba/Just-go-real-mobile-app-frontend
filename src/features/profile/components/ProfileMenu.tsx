@@ -1,171 +1,382 @@
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
-    Image,
-    Modal,
-    Pressable,
-    Text,
-    View,
+  Ionicons,
+} from '@expo/vector-icons';
+
+import * as ImagePicker
+  from 'expo-image-picker';
+
+import {
+  useRouter,
+} from 'expo-router';
+
+import {
+  useState,
+} from 'react';
+
+import {
+  useTranslation,
+} from 'react-i18next';
+
+import {
+  Image,
+  Modal,
+  Pressable,
+  Text,
+  View,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
 
-import { ProfileAction } from '@/features/profile/components/ProfileAction';
-import { useProfile } from '@/features/profile/hooks/useProfile';
+import Toast from
+  'react-native-toast-message';
+
 
 import {
-    clearAuthSession,
+  ProfileAction,
+} from '@/features/profile/components/ProfileAction';
+
+
+import {
+  useProfile,
+} from '@/features/profile/hooks/useProfile';
+
+
+import {
+  useUploadProfileImage,
+} from '@/features/profile/hooks/useUploadProfileImage';
+
+
+import {
+  getRefreshToken,
 } from '@/features/auth/storage/auth.storage';
 
+
 import {
-    clearProfile,
+  logout,
+} from '@/features/auth/api/logout';
+
+
+import {
+  clearTokens,
+} from '@/features/auth/storage/auth.storage';
+
+
+import {
+  clearProfile,
 } from '@/features/profile/storage/profileStorage';
+
+
 
 const DEFAULT_AVATAR =
   'https://ui-avatars.com/api/?name=User&background=17336B&color=ffffff';
 
+
+
 export default function ProfileMenu() {
-  const router = useRouter();
-  const { t } = useTranslation();
+
+  const router =
+    useRouter();
+
+
+  const { t } =
+    useTranslation();
+
 
   const [
     visible,
     setVisible,
   ] = useState(false);
 
+
   const [
     isLoggingOut,
     setIsLoggingOut,
   ] = useState(false);
 
+
   const {
     profile,
-    updateProfile,
   } = useProfile();
+
+
+  const {
+    mutate:
+      uploadProfileImage,
+    isLoading:
+      isUploadingImage,
+  } =
+    useUploadProfileImage();
+
+
 
   const profileImage =
     profile.profileImage ||
     DEFAULT_AVATAR;
 
+
+
   const pickProfileImage =
     async () => {
+
+      if (isUploadingImage) {
+        return;
+      }
+
+
       try {
+
         const permission =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
+          await ImagePicker
+            .requestMediaLibraryPermissionsAsync();
+
 
         if (!permission.granted) {
+
           Toast.show({
+
             type: 'error',
+
             text1:
               'Permission required',
+
             text2:
               'Allow gallery access to select a profile image.',
+
             position: 'top',
+
           });
 
           return;
         }
 
-        const result =
-          await ImagePicker.launchImageLibraryAsync(
-            {
-              mediaTypes: [
-                'images',
-              ],
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 0.8,
-            },
-          );
 
-        if (result.canceled) {
+
+        const result =
+          await ImagePicker
+            .launchImageLibraryAsync({
+
+              mediaTypes:
+                ImagePicker
+                  .MediaTypeOptions
+                  .Images,
+
+              allowsEditing:
+                true,
+
+              aspect:
+                [1, 1],
+
+              quality:
+                0.8,
+
+            });
+
+
+
+        if (
+          result.canceled
+        ) {
           return;
         }
 
+
+
         const selectedImage =
           result.assets[0]?.uri;
+
+
 
         if (!selectedImage) {
           return;
         }
 
-        await updateProfile({
-          profileImage:
-            selectedImage,
-        });
+
+
+        /*
+         * Upload image to S3
+         * and update /user/me.
+         */
+        await uploadProfileImage(
+          selectedImage,
+        );
+
+
 
         Toast.show({
+
           type: 'success',
+
           text1:
             'Profile photo updated',
-          visibilityTime: 1200,
-          position: 'top',
+
+          visibilityTime:
+            1200,
+
+          position:
+            'top',
+
         });
+
+
       } catch (error) {
+
         console.error(
           'Profile image update failed:',
           error,
         );
 
+
         Toast.show({
+
           type: 'error',
-          text1: 'Update failed',
+
+          text1:
+            'Update failed',
+
           text2:
             'Unable to update profile photo.',
-          position: 'top',
+
+          position:
+            'top',
+
         });
+
       }
+
     };
+
+
 
   const handleLogout =
     async () => {
+
       if (isLoggingOut) {
         return;
       }
 
-      try {
-        setIsLoggingOut(true);
 
-        await Promise.all([
-          clearAuthSession(),
-          clearProfile(),
-        ]);
+      try {
+
+        setIsLoggingOut(
+          true,
+        );
+
+
+        /*
+         * Get refresh token
+         */
+        const refreshToken =
+          await getRefreshToken();
+
+
+
+        /*
+         * Tell backend to
+         * revoke refresh token.
+         */
+        if (refreshToken) {
+
+          try {
+
+            await logout(
+              refreshToken,
+            );
+
+          } catch (error) {
+
+            /*
+             * Even if the backend
+             * logout fails, we still
+             * clear local authentication.
+             */
+            console.error(
+              'Backend logout failed:',
+              error,
+            );
+
+          }
+
+        }
+
+
+
+        /*
+         * Clear local tokens.
+         */
+        await clearTokens();
+
+
+
+        /*
+         * Clear cached profile.
+         */
+        await clearProfile();
+
+
 
         setVisible(false);
 
+
+
         Toast.show({
+
           type: 'success',
+
           text1:
             'Logged out successfully',
-          position: 'top',
-          visibilityTime: 1000,
+
+          position:
+            'top',
+
+          visibilityTime:
+            1000,
+
         });
+
+
 
         router.replace(
           '/auth/login',
         );
+
+
       } catch (error) {
+
         console.error(
           'Logout failed:',
           error,
         );
 
+
         Toast.show({
+
           type: 'error',
-          text1: 'Logout failed',
+
+          text1:
+            'Logout failed',
+
           text2:
             'Unable to clear your login session.',
-          position: 'top',
+
+          position:
+            'top',
+
         });
+
+
       } finally {
-        setIsLoggingOut(false);
+
+        setIsLoggingOut(
+          false,
+        );
+
       }
+
     };
+
+
 
   return (
     <>
+
       <Pressable
         onPress={() =>
           setVisible(true)
@@ -174,6 +385,7 @@ export default function ProfileMenu() {
         accessibilityLabel="Open profile menu"
         className="h-11 w-11 overflow-hidden rounded-full border-2 border-white bg-white"
       >
+
         <Image
           source={{
             uri: profileImage,
@@ -181,7 +393,10 @@ export default function ProfileMenu() {
           resizeMode="cover"
           className="h-full w-full"
         />
+
       </Pressable>
+
+
 
       <Modal
         visible={visible}
@@ -191,18 +406,21 @@ export default function ProfileMenu() {
           setVisible(false)
         }
       >
+
         <Pressable
           onPress={() =>
             setVisible(false)
           }
           className="flex-1 items-end bg-black/45 px-4 pt-16"
         >
+
           <Pressable
             onPress={(event) =>
               event.stopPropagation()
             }
             className="w-full max-w-sm overflow-hidden rounded-[32px] bg-[#10294A]"
           >
+
             <Pressable
               onPress={() =>
                 setVisible(false)
@@ -212,14 +430,19 @@ export default function ProfileMenu() {
               accessibilityLabel="Close profile menu"
               className="absolute right-4 top-4 z-20 h-8 w-8 items-center justify-center rounded-full bg-white/10"
             >
+
               <Ionicons
                 name="close"
                 size={18}
                 color="#FFFFFF"
               />
+
             </Pressable>
 
+
+
             <View className="flex-row items-center gap-4 p-6">
+
               <Image
                 source={{
                   uri: profileImage,
@@ -228,7 +451,9 @@ export default function ProfileMenu() {
                 className="h-20 w-20 rounded-full border-2 border-white/40 bg-white"
               />
 
+
               <View className="flex-1">
+
                 <Text
                   numberOfLines={1}
                   className="text-xl font-extrabold text-white"
@@ -236,14 +461,22 @@ export default function ProfileMenu() {
                   {profile.name}
                 </Text>
 
+
                 <View className="mt-2 self-start rounded-full bg-primary px-4 py-1">
+
                   <Text className="text-xs font-extrabold uppercase text-white">
+
                     {profile.role}
+
                   </Text>
+
                 </View>
 
+
                 {profile.locationName ? (
+
                   <View className="mt-2 flex-row items-center gap-1">
+
                     <Ionicons
                       name="location-outline"
                       size={13}
@@ -254,25 +487,47 @@ export default function ProfileMenu() {
                       numberOfLines={1}
                       className="text-xs text-slate-300"
                     >
-                      {
-                        profile.locationName
-                      }
+                      {profile.locationName}
                     </Text>
+
                   </View>
+
                 ) : null}
+
               </View>
+
             </View>
 
+
+
             <View className="bg-white px-5 py-4">
+
               <ProfileAction
-                icon="camera-outline"
-                label={t(
-                  'profile.changePhoto',
-                )}
+                icon={
+                  isUploadingImage
+                    ? 'hourglass-outline'
+                    : 'camera-outline'
+                }
+                label={
+                  isUploadingImage
+                    ? 'Uploading...'
+                    : t(
+                        'profile.changePhoto',
+                      )
+                }
                 onPress={() => {
-                  void pickProfileImage();
+
+                  if (
+                    !isUploadingImage
+                  ) {
+
+                    void pickProfileImage();
+
+                  }
+
                 }}
               />
+
 
               <ProfileAction
                 icon="pencil-outline"
@@ -280,13 +535,16 @@ export default function ProfileMenu() {
                   'profile.editProfile',
                 )}
                 onPress={() => {
+
                   setVisible(false);
 
                   router.push(
                     '/profile/profile-settings',
                   );
+
                 }}
               />
+
 
               <ProfileAction
                 icon="language-outline"
@@ -294,13 +552,16 @@ export default function ProfileMenu() {
                   'profile.language',
                 )}
                 onPress={() => {
+
                   setVisible(false);
 
                   router.push(
                     '/language-settings',
                   );
+
                 }}
               />
+
 
               <ProfileAction
                 icon="location-outline"
@@ -308,13 +569,16 @@ export default function ProfileMenu() {
                   'profile.location',
                 )}
                 onPress={() => {
+
                   setVisible(false);
 
                   router.push(
                     '/location-settings',
                   );
+
                 }}
               />
+
 
               <ProfileAction
                 icon={
@@ -331,15 +595,26 @@ export default function ProfileMenu() {
                 }
                 destructive
                 onPress={() => {
-                  if (!isLoggingOut) {
+
+                  if (
+                    !isLoggingOut
+                  ) {
+
                     void handleLogout();
+
                   }
+
                 }}
               />
+
             </View>
+
           </Pressable>
+
         </Pressable>
+
       </Modal>
+
     </>
   );
 }
