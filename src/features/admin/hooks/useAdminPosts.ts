@@ -6,16 +6,13 @@ import {
 } from 'react';
 
 import {
-  deleteCreatedNews,
-  getCreatedNews,
-  updateCreatedNewsStatus,
-} from '@/features/news/storage/newsStorage';
-
-import {
-  deleteCreatedVideo,
-  getCreatedVideos,
-  updateCreatedVideoStatus,
-} from '@/features/videos/storage/videoStorage';
+  getAdminDashboard,
+  getAdminPosts,
+  approveAdminPost,
+  rejectAdminPost,
+  unpublishAdminPost,
+  deleteAdminPost,
+} from '@/features/admin/api/admin.api';
 
 import type {
   FeedItem,
@@ -29,12 +26,49 @@ export type AdminPostFilter =
   | 'rejected'
   | 'unpublished';
 
+type DashboardSummary = {
+  total: number;
+  pending: number;
+  published: number;
+  rejected: number;
+};
+
+const INITIAL_SUMMARY: DashboardSummary = {
+  total: 0,
+  pending: 0,
+  published: 0,
+  rejected: 0,
+};
+
 export function useAdminPosts() {
-  const [items, setItems] = useState<FeedItem[]>([]);
-  const [filter, setFilter] = useState<AdminPostFilter>('pending');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // =====================================================
+  // STATE
+  // =====================================================
+
+  const [items, setItems] =
+    useState<FeedItem[]>([]);
+
+  const [filter, setFilter] =
+    useState<AdminPostFilter>('pending');
+
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [isRefreshing, setIsRefreshing] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [summary, setSummary] =
+    useState<DashboardSummary>(
+      INITIAL_SUMMARY,
+    );
+
+  // =====================================================
+  // LOAD POSTS + DASHBOARD
+  // =====================================================
+
   const loadPosts = useCallback(
     async (
       refreshing = false,
@@ -45,33 +79,48 @@ export function useAdminPosts() {
         } else {
           setIsLoading(true);
         }
+
         setError(null);
 
         const [
-          createdNews,
-          createdVideos,
+          posts,
+          dashboard,
         ] = await Promise.all([
-          getCreatedNews(),
-          getCreatedVideos(),
+          getAdminPosts(),
+          getAdminDashboard(),
         ]);
 
-        const mergedItems: FeedItem[] =
-          [
-            ...createdNews,
-            ...createdVideos,
-          ].sort(
+        // Newest posts first
+        const sortedPosts =
+          [...posts].sort(
             (
               first,
               second,
             ) => {
-              const firstDate =
-                new Date(first.createdAt ?? 0).getTime();
-              const secondDate =
-                new Date(second.createdAt ?? 0).getTime();
-              return (secondDate - firstDate);
+              const firstTime =
+                new Date(
+                  first.createdAt ?? 0,
+                ).getTime();
+
+              const secondTime =
+                new Date(
+                  second.createdAt ?? 0,
+                ).getTime();
+
+              return (
+                secondTime -
+                firstTime
+              );
             },
           );
-        setItems(mergedItems);
+
+        setItems(
+          sortedPosts,
+        );
+
+        setSummary(
+          dashboard,
+        );
       } catch (loadError) {
         console.error(
           'Failed to load admin posts:',
@@ -91,9 +140,17 @@ export function useAdminPosts() {
     [],
   );
 
+  // =====================================================
+  // INITIAL LOAD
+  // =====================================================
+
   useEffect(() => {
     void loadPosts();
   }, [loadPosts]);
+
+  // =====================================================
+  // CHANGE POST STATUS
+  // =====================================================
 
   const changeStatus =
     useCallback(
@@ -101,53 +158,76 @@ export function useAdminPosts() {
         item: FeedItem,
         status: PostStatus,
       ) => {
-        console.log(
-          'ADMIN STATUS CHANGE:',
-          item.id,
-          item.type,
-          status,
-        );
+        let updatedItem: FeedItem;
 
-        if (
-          item.type === 'video'
-        ) {
-          await updateCreatedVideoStatus(
-            item.id,
-            status,
-          );
-        } else {
-          await updateCreatedNewsStatus(
-            item.id,
-            status,
-          );
+        switch (status) {
+          case 'published':
+            updatedItem =
+              await approveAdminPost(
+                item.id,
+              );
+            break;
+
+          case 'rejected':
+            updatedItem =
+              await rejectAdminPost(
+                item.id,
+              );
+            break;
+
+          case 'unpublished':
+            updatedItem =
+              await unpublishAdminPost(
+                item.id,
+              );
+            break;
+
+          default:
+            return;
         }
 
+        // Update post immediately
         setItems(
-          (currentItems) =>
+          currentItems =>
             currentItems.map(
-              (currentItem) =>
+              currentItem =>
                 currentItem.id ===
                 item.id
                   ? {
                       ...currentItem,
-                      status,
-
-                      publishedAt:
-                        status ===
-                        'published'
-                          ? new Date().toISOString()
-                          : undefined,
+                      ...updatedItem,
                     }
                   : currentItem,
             ),
         );
+
+        // Refresh dashboard counters
+        try {
+          const dashboard =
+            await getAdminDashboard();
+
+          setSummary(
+            dashboard,
+          );
+        } catch (dashboardError) {
+          console.error(
+            'Failed to refresh dashboard:',
+            dashboardError,
+          );
+        }
       },
       [],
     );
 
+  // =====================================================
+  // APPROVE / PUBLISH
+  // =====================================================
+
   const approvePost =
     useCallback(
-      async (item: FeedItem) => {
+      async (
+        item: FeedItem,
+      ) => {
         await changeStatus(
           item,
           'published',
@@ -156,9 +236,15 @@ export function useAdminPosts() {
       [changeStatus],
     );
 
+  // =====================================================
+  // REJECT
+  // =====================================================
+
   const rejectPost =
     useCallback(
-      async (item: FeedItem) => {
+      async (
+        item: FeedItem,
+      ) => {
         await changeStatus(
           item,
           'rejected',
@@ -167,9 +253,15 @@ export function useAdminPosts() {
       [changeStatus],
     );
 
+  // =====================================================
+  // UNPUBLISH
+  // =====================================================
+
   const unpublishPost =
     useCallback(
-      async (item: FeedItem) => {
+      async (
+        item: FeedItem,
+      ) => {
         await changeStatus(
           item,
           'unpublished',
@@ -178,123 +270,114 @@ export function useAdminPosts() {
       [changeStatus],
     );
 
+  // =====================================================
+  // DELETE
+  // =====================================================
+
   const deletePost =
     useCallback(
-      async (item: FeedItem) => {
-        if (
-          item.type === 'video'
-        ) {
-          await deleteCreatedVideo(
-            item.id,
-          );
-        } else {
-          await deleteCreatedNews(
-            item.id,
-          );
-        }
+      async (
+        item: FeedItem,
+      ) => {
+        await deleteAdminPost(
+          item.id,
+        );
 
+        // Remove from local list
         setItems(
-          (currentItems) =>
+          currentItems =>
             currentItems.filter(
-              (currentItem) =>
+              currentItem =>
                 currentItem.id !==
                 item.id,
             ),
         );
+
+        // Refresh dashboard counters
+        try {
+          const dashboard =
+            await getAdminDashboard();
+
+          setSummary(
+            dashboard,
+          );
+        } catch (dashboardError) {
+          console.error(
+            'Failed to refresh dashboard:',
+            dashboardError,
+          );
+        }
       },
       [],
     );
 
+  // =====================================================
+  // FILTER POSTS
+  // =====================================================
+
   const filteredItems =
     useMemo(() => {
-      if (filter === 'all') {
+      if (
+        filter === 'all'
+      ) {
         return items;
       }
 
-      if (filter === 'pending') {
-        return items.filter(
-          (item) => {
-            const status =
-              item.status ??
-              'pending';
-
-            return (
-              status ===
-                'pending' ||
-              status ===
-                'unpublished'
-            );
-          },
-        );
-      }
-
       return items.filter(
-        (item) =>
-          (item.status ??
-            'pending') ===
-          filter,
+        item => {
+          const status =
+            item.status ??
+            'pending';
+
+          return (
+            status === filter
+          );
+        },
       );
-    }, [filter, items]);
+    }, [
+      filter,
+      items,
+    ]);
 
-  const summary =
-    useMemo(() => {
-      const pending =
-        items.filter(
-          (item) => {
-            const status =
-              item.status ??
-              'pending';
-
-            return (
-              status ===
-                'pending' ||
-              status ===
-                'unpublished'
-            );
-          },
-        ).length;
-
-      const published =
-        items.filter(
-          (item) =>
-            item.status ===
-            'published',
-        ).length;
-
-      const rejected =
-        items.filter(
-          (item) =>
-            item.status ===
-            'rejected',
-        ).length;
-
-      return {
-        total: items.length,
-        pending,
-        published,
-        rejected,
-      };
-    }, [items]);
+  // =====================================================
+  // REFRESH
+  // =====================================================
 
   const refresh =
     useCallback(() => {
       void loadPosts(true);
     }, [loadPosts]);
 
+  // =====================================================
+  // RETURN
+  // =====================================================
+
   return {
+    // Posts
     items,
     filteredItems,
+
+    // Filter
     filter,
+    setFilter,
+
+    // Dashboard
     summary,
+
+    // Loading
     isLoading,
     isRefreshing,
+
+    // Error
     error,
 
-    setFilter,
+    // Actions
     approvePost,
     rejectPost,
     unpublishPost,
     deletePost,
+
+    // Refresh
     refresh,
   };
 }

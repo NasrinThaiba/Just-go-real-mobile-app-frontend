@@ -1,16 +1,17 @@
 import {
   getAccessToken,
-} from "@/features/auth/storage/auth.storage";
+} from '@/features/auth/storage/auth.storage';
 
 
 type ApiOptions = {
 
   method?:
-    | "GET"
-    | "POST"
-    | "PUT"
-    | "PATCH"
-    | "DELETE";
+    | 'GET'
+    | 'POST'
+    | 'PUT'
+    | 'PATCH'
+    | 'DELETE';
+
 
   body?: unknown;
 
@@ -23,13 +24,14 @@ const BASE_URL =
 
 
 
-if (!BASE_URL) {
+if(!BASE_URL){
 
   throw new Error(
-    "EXPO_PUBLIC_API_URL is missing",
+    'EXPO_PUBLIC_API_URL is missing',
   );
 
 }
+
 
 
 
@@ -42,63 +44,77 @@ export async function apiClient<T>(
 ):Promise<T>{
 
 
+
   const token =
     await getAccessToken();
 
 
 
+  const url =
+    `${BASE_URL}${path}`;
+
+
+
   console.log(
-    "API URL:",
-    `${BASE_URL}${path}`,
+    'REQUEST URL:',
+    url,
   );
 
 
   console.log(
-    "METHOD:",
-    options.method ?? "GET",
+    'REQUEST METHOD:',
+    options.method ?? 'GET',
   );
 
 
   console.log(
-    "ACCESS TOKEN:",
-    token,
+    'HAS TOKEN:',
+    !!token,
   );
+
 
 
 
   const response =
     await fetch(
 
-      `${BASE_URL}${path}`,
+      url,
 
       {
 
         method:
-          options.method ?? "GET",
+          options.method ?? 'GET',
 
 
-        headers: {
+        headers:{
 
-          "Content-Type":
-            "application/json",
+          'Content-Type':
+            'application/json',
 
 
           ...(token
             ? {
-                Authorization:
-                  `Bearer ${token}`,
-              }
+
+              Authorization:
+                `Bearer ${token}`,
+
+            }
             : {}),
 
         },
 
 
+
         body:
-          options.body
-            ? JSON.stringify(
-                options.body,
-              )
-            : undefined,
+
+          options.body !== undefined
+
+          ? JSON.stringify(
+              options.body,
+            )
+
+          : undefined,
+
 
       },
 
@@ -106,33 +122,64 @@ export async function apiClient<T>(
 
 
 
+
+
   console.log(
-    "STATUS:",
+    'RESPONSE STATUS:',
     response.status,
   );
 
 
 
-  const data =
-    await response.json();
+
+  const text =
+    await response.text();
+
+
+
+
+  let data:any = {};
+
+
+
+  try{
+
+    data =
+      text
+      ? JSON.parse(text)
+      : {};
+
+  }
+
+  catch{
+
+    data={
+      message:text,
+    };
+
+  }
+
+
 
 
 
   console.log(
-    "RESPONSE:",
+    'RESPONSE DATA:',
     data,
   );
 
 
 
-  if (!response.ok) {
+
+  if(!response.ok){
 
     throw new Error(
       data.message ??
-      "Something went wrong",
+      'API request failed',
     );
 
   }
+
 
 
 
