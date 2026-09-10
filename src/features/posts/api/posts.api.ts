@@ -1,59 +1,116 @@
-// src/features/posts/api/posts.api.ts
-
 import { apiClient } from '@/shared/api/axiosInstance';
 
 import type {
   FeedItem,
-  PostStatus,
 } from '@/features/news/types/news.types';
 
 import type {
   GetMyPostsResponse,
   GetPostByIdResponse,
-  UpdatePostStatusResponse,
 } from '@/features/posts/types/posts.types';
 
+
+
 export const postsApi = {
+
+
+  // ===============================
+  // GET MY POSTS
+  // ===============================
+
   async getMyPosts(): Promise<FeedItem[]> {
+
     const response =
       await apiClient.get<GetMyPostsResponse>(
-        '/posts/me',
+        '/news/me',
       );
 
+
     return response.data.data;
+
   },
+
+
+
+  // ===============================
+  // GET POST BY ID
+  // ===============================
 
   async getPostById(
-    postId: string,
-  ): Promise<FeedItem> {
+    postId:string,
+  ):Promise<FeedItem>{
+
+
     const response =
       await apiClient.get<GetPostByIdResponse>(
-        `/posts/${postId}`,
+        `/news/me/${postId}`,
       );
 
+
     return response.data.data;
+
   },
 
-  async updatePostStatus(
-    postId: string,
-    status: PostStatus,
-  ): Promise<FeedItem> {
+
+
+  // ===============================
+  // UPDATE POST
+  // ===============================
+
+  async updatePost(
+    postId:string,
+    payload:Partial<FeedItem>,
+  ):Promise<FeedItem>{
+
+
     const response =
-      await apiClient.patch<UpdatePostStatusResponse>(
-        `/posts/${postId}/status`,
-        {
-          status,
-        },
+      await apiClient.patch<GetPostByIdResponse>(
+        `/news/${postId}`,
+        payload,
       );
 
+
     return response.data.data;
+
   },
+
+
+
+  // ===============================
+  // UNPUBLISH POST
+  // ===============================
+
+  async unpublishPost(
+    postId:string,
+  ):Promise<FeedItem>{
+
+
+    const response =
+      await apiClient.patch<GetPostByIdResponse>(
+        `/news/${postId}/unpublish`,
+      );
+
+
+    return response.data.data;
+
+  },
+
+
+
+  // ===============================
+  // DELETE POST
+  // ===============================
 
   async deletePost(
-    postId: string,
-  ): Promise<void> {
+    postId:string,
+  ):Promise<void>{
+
+
     await apiClient.delete(
-      `/posts/${postId}`,
+      `/news/${postId}`,
     );
+
   },
+
+
 };
