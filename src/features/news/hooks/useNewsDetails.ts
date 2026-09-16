@@ -1,14 +1,19 @@
+// src/features/news/hooks/useNewsDetails.ts
+
 import {
   useCallback,
   useEffect,
   useState,
 } from 'react';
 
-import { dummyNews } from '@/data/dummyNews';
-import { getCreatedNewsById } from '@/features/news/storage/newsStorage';
-import { getCreatedVideoById } from '@/features/videos/storage/videoStorage';
+import {
+  getNewsById,
+} from '@/features/news/api/news.api';
 
-import type { FeedItem } from '@/features/news/types/news.types';
+import type {
+  FeedItem,
+} from '@/features/news/types/news.types';
+
 
 export function useNewsDetails(
   id: string,
@@ -22,109 +27,81 @@ export function useNewsDetails(
   const [error, setError] =
     useState<string | null>(null);
 
+
   const loadContent =
     useCallback(async () => {
+
       if (!id) {
+
         setItem(null);
+
         setError(
           'Content ID is required.',
         );
+
         setIsLoading(false);
+
         return;
       }
 
+
       try {
+
         setIsLoading(true);
+
         setError(null);
 
-        const seedItem =
-          dummyNews.find(
-            (newsItem) =>
-              newsItem.id === id,
+
+        const result =
+          await getNewsById(id);
+
+
+        if (!result) {
+
+          setItem(null);
+
+          setError(
+            'News not found.',
           );
 
-        if (seedItem) {
-          setItem(seedItem);
           return;
         }
 
-        if (
-          id.startsWith(
-            'local-news-',
-          )
-        ) {
-          const localNews =
-            await getCreatedNewsById(
-              id,
-            );
 
-          if (localNews) {
-            setItem(localNews);
-            return;
-          }
-        }
+        setItem(result);
 
-        if (
-          id.startsWith(
-            'local-video-',
-          )
-        ) {
-          const localVideo =
-            await getCreatedVideoById(
-              id,
-            );
-
-          if (localVideo) {
-            setItem(localVideo);
-            return;
-          }
-        }
-
-        const localNews =
-          await getCreatedNewsById(
-            id,
-          );
-
-        if (localNews) {
-          setItem(localNews);
-          return;
-        }
-
-        const localVideo =
-          await getCreatedVideoById(
-            id,
-          );
-
-        if (localVideo) {
-          setItem(localVideo);
-          return;
-        }
-
-        setItem(null);
-        setError(
-          'Content not found.',
-        );
       } catch (loadError) {
+
         console.error(
-          'Failed to load content:',
+          'Failed to load news:',
           loadError,
         );
 
+
         setItem(null);
+
 
         setError(
           loadError instanceof Error
             ? loadError.message
-            : 'Unable to load content.',
+            : 'Unable to load news.',
         );
+
       } finally {
+
         setIsLoading(false);
+
       }
+
     }, [id]);
 
+
   useEffect(() => {
+
     void loadContent();
+
   }, [loadContent]);
+
 
   return {
     item,

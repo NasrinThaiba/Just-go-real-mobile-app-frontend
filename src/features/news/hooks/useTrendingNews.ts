@@ -1,4 +1,4 @@
-// src/features/news/hooks/useBreakingNews.ts
+// src/features/news/hooks/useTrendingNews.ts
 
 import {
   useCallback,
@@ -7,7 +7,7 @@ import {
 } from 'react';
 
 import {
-  getBreakingNews,
+  getTrendingNews,
 } from '@/features/news/api/news.api';
 
 import type {
@@ -16,22 +16,9 @@ import type {
 } from '@/features/news/types/news.types';
 
 
-type UseBreakingNewsResult = {
-
-  items: FeedItem[];
-
-  isLoading: boolean;
-
-  error: string | null;
-
-  refetch: () => Promise<void>;
-
-};
-
-
-export function useBreakingNews(
+export function useTrendingNews(
   language: SupportedLanguage,
-): UseBreakingNewsResult {
+) {
 
   const [items, setItems] =
     useState<FeedItem[]>([]);
@@ -43,7 +30,7 @@ export function useBreakingNews(
     useState<string | null>(null);
 
 
-  const loadBreakingNews =
+  const loadTrendingNews =
     useCallback(async () => {
 
       try {
@@ -54,7 +41,7 @@ export function useBreakingNews(
 
 
         const result =
-          await getBreakingNews({
+          await getTrendingNews({
             language,
             page: 1,
             limit: 20,
@@ -66,7 +53,7 @@ export function useBreakingNews(
       } catch (loadError) {
 
         console.error(
-          'GET BREAKING NEWS ERROR:',
+          'GET TRENDING NEWS ERROR:',
           loadError,
         );
 
@@ -74,7 +61,7 @@ export function useBreakingNews(
         setError(
           loadError instanceof Error
             ? loadError.message
-            : 'Unable to load breaking news',
+            : 'Unable to load trending news',
         );
 
         setItems([]);
@@ -90,9 +77,9 @@ export function useBreakingNews(
 
   useEffect(() => {
 
-    void loadBreakingNews();
+    void loadTrendingNews();
 
-  }, [loadBreakingNews]);
+  }, [loadTrendingNews]);
 
 
   return {
@@ -103,7 +90,7 @@ export function useBreakingNews(
 
     error,
 
-    refetch: loadBreakingNews,
+    refetch: loadTrendingNews,
 
   };
 

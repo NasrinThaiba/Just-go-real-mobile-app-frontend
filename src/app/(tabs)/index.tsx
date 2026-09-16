@@ -1,7 +1,10 @@
+// src/app/(tabs)/index.tsx
+
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
 import {
   Image,
   Pressable,
@@ -9,6 +12,7 @@ import {
   Text,
   View,
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import BreakingCarousel from '@/components/breaking/BreakingCarousel';
@@ -17,22 +21,51 @@ import { SideDrawer } from '@/components/layout/SideDrawer';
 import { LoadingView } from '@/components/ui/LoadingView';
 
 import { useAds } from '@/features/ads/hooks/useAds';
+
 import { useBreakingNews } from '@/features/news/hooks/useBreakingNews';
+
 import { useNews } from '@/features/news/hooks/useNews';
-import type { FeedItem } from '@/features/news/types/news.types';
+
+import { useTrendingNews } from '@/features/news/hooks/useTrendingNews';
+
+import type {
+  FeedItem,
+} from '@/features/news/types/news.types';
 
 import { useAppLanguage } from '@/hooks/useAppLanguage';
-import { getPublisherImage } from '@/features/news/constants/publisher-images';
-import { useSavedContent } from '@/features/saved/context/SavedContext';
 
-import type { SupportedLanguage } from '@/types/common.types';
-import { formatPublishedTime, formatViews } from '@/utils/content-formatters';
+import {
+  getPublisherImage,
+} from '@/features/news/constants/publisher-images';
+
+import {
+  useSavedContent,
+} from '@/features/saved/context/SavedContext';
+
+import type {
+  SupportedLanguage,
+} from '@/types/common.types';
+
+import {
+  formatPublishedTime,
+  formatViews,
+} from '@/utils/content-formatters';
+
+
+// ============================================================
+// CATEGORY TYPE
+// ============================================================
 
 type CategoryItem = {
   id: string;
   label: string;
   image: string;
 };
+
+
+// ============================================================
+// CATEGORIES
+// ============================================================
 
 const categories: CategoryItem[] = [
   {
@@ -41,30 +74,35 @@ const categories: CategoryItem[] = [
     image:
       'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=700',
   },
+
   {
     id: 'science',
     label: 'Science',
     image:
       'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=700',
   },
+
   {
     id: 'technology',
     label: 'Technology',
     image:
       'https://images.unsplash.com/photo-1518770660439-4636190af475?w=700',
   },
+
   {
     id: 'sports',
     label: 'Sports',
     image:
       'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=700',
   },
+
   {
     id: 'business',
     label: 'Business',
     image:
       'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=700',
   },
+
   {
     id: 'cinema',
     label: 'Cinema',
@@ -73,87 +111,206 @@ const categories: CategoryItem[] = [
   },
 ];
 
+
+// ============================================================
+// HOME SCREEN
+// ============================================================
+
 export default function HomeScreen() {
+
   const router = useRouter();
-  const { i18n } = useTranslation();
 
-  const [drawerVisible, setDrawerVisible] =
-    useState(false);
+  const { i18n } =
+    useTranslation();
 
-  const { currentLanguage } =
-    useAppLanguage();
+
+  const [
+    drawerVisible,
+    setDrawerVisible,
+  ] = useState(false);
+
+
+  // ==========================================================
+  // LANGUAGE
+  // ==========================================================
+
+  const {
+    currentLanguage,
+  } = useAppLanguage();
+
+
+  // ==========================================================
+  // BREAKING NEWS
+  // Backend:
+  // GET /news/breaking
+  // ==========================================================
 
   const {
     items: breakingNews,
-    isLoading: isBreakingLoading,
-    error: breakingError,
-  } = useBreakingNews(currentLanguage);
+
+    isLoading:
+      isBreakingLoading,
+
+    error:
+      breakingError,
+
+  } = useBreakingNews(
+    currentLanguage,
+  );
+
+
+  // ==========================================================
+  // TRENDING NEWS
+  // Backend:
+  // GET /news/trending
+  // ==========================================================
+
+  const {
+    items: trendingNews,
+
+    isLoading:
+      isTrendingLoading,
+
+    error:
+      trendingError,
+
+  } = useTrendingNews(
+    currentLanguage,
+  );
+
+
+  // ==========================================================
+  // GENERAL NEWS
+  // Backend:
+  // GET /news
+  // ==========================================================
 
   const {
     businessNews,
     scienceNews,
     sportsNews,
-  } = useNews(currentLanguage);
 
-  const { topAds } = useAds();
+    isLoading:
+      isNewsLoading,
+
+    error:
+      newsError,
+
+  } = useNews(
+    currentLanguage,
+  );
+
+
+  // ==========================================================
+  // ADS
+  // ==========================================================
+
+  const {
+    topAds,
+  } = useAds();
+
+
+  // ==========================================================
+  // APP LANGUAGE
+  // ==========================================================
 
   const appLanguage =
     i18n.resolvedLanguage === 'ta'
       ? 'ta'
       : 'en';
 
-  const latestNews = useMemo(() => {
-    const combinedNews = [
-      ...businessNews,
-      ...scienceNews,
-      ...sportsNews,
-    ];
 
-    const uniqueNews =
-      combinedNews.filter(
-        (
-          item,
-          index,
-          collection,
-        ) =>
-          collection.findIndex(
-            (newsItem) =>
-              newsItem.id === item.id,
-          ) === index,
-      );
+  // ==========================================================
+  // LATEST NEWS
+  // ==========================================================
 
-    return uniqueNews
-      .sort((first, second) => {
-        const firstDate =
-          first.publishedAt ??
-          first.createdAt;
+  const latestNews =
+    useMemo(() => {
 
-        const secondDate =
-          second.publishedAt ??
-          second.createdAt;
+      const combinedNews = [
+        ...businessNews,
+        ...scienceNews,
+        ...sportsNews,
+      ];
 
-        return (
-          new Date(
-            secondDate,
-          ).getTime() -
-          new Date(
-            firstDate,
-          ).getTime()
+
+      // Remove duplicates
+      const uniqueNews =
+        combinedNews.filter(
+          (
+            item,
+            index,
+            collection,
+          ) =>
+            collection.findIndex(
+              (newsItem) =>
+                newsItem.id ===
+                item.id,
+            ) === index,
         );
-      })
-      .slice(0, 5);
-  }, [
-    businessNews,
-    scienceNews,
-    sportsNews,
-  ]);
+
+
+      return uniqueNews
+        .filter(
+          (item) =>
+            item.type ===
+              'news' &&
+            item.status ===
+              'published',
+        )
+        .sort(
+          (
+            first,
+            second,
+          ) => {
+
+            const firstDate =
+              first.publishedAt ??
+              first.createdAt;
+
+
+            const secondDate =
+              second.publishedAt ??
+              second.createdAt;
+
+
+            return (
+              new Date(
+                secondDate,
+              ).getTime() -
+              new Date(
+                firstDate,
+              ).getTime()
+            );
+
+          },
+        )
+        .slice(0, 5);
+
+    }, [
+      businessNews,
+      scienceNews,
+      sportsNews,
+    ]);
+
+
+  // ==========================================================
+  // OPEN CONTENT
+  // ==========================================================
 
   const openContent = (
     item: FeedItem,
   ) => {
-    if (item.type === 'video') {
+
+    if (
+      item.type ===
+      'video'
+    ) {
+
       router.push({
-        pathname: '/video/[id]',
+        pathname:
+          '/video/[id]',
+
         params: {
           id: item.id,
         },
@@ -162,36 +319,68 @@ export default function HomeScreen() {
       return;
     }
 
+
     router.push({
-      pathname: '/article/[id]',
+      pathname:
+        '/article/[id]',
+
       params: {
         id: item.id,
       },
     });
+
   };
+
+
+  // ==========================================================
+  // OPEN CATEGORY
+  // ==========================================================
 
   const openCategory = (
     category: string,
   ) => {
+
     router.push({
-      pathname: '/news',
+      pathname:
+        '/news',
+
       params: {
         category,
       },
     });
+
   };
 
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
   return (
+
     <SafeAreaView
       edges={['top']}
       className="flex-1 bg-white"
     >
+
+      {/* =====================================================
+          SIDE DRAWER
+      ===================================================== */}
+
       <SideDrawer
-        visible={drawerVisible}
+        visible={
+          drawerVisible
+        }
+
         onClose={() =>
           setDrawerVisible(false)
         }
       />
+
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <AppHeader
         onMenuPress={() =>
@@ -199,88 +388,110 @@ export default function HomeScreen() {
         }
       />
 
+
       <ScrollView
         className="flex-1 bg-white"
+
         contentContainerStyle={{
           paddingHorizontal: 14,
           paddingBottom: 40,
         }}
+
         showsVerticalScrollIndicator={
           false
         }
       >
-        {/* Top advertisement */}
 
-        {/* <View className="mt-4">
-          <ImageAd
-            ads={topAds}
-            size="top"
-          />
-        </View> */}
 
-        {/* Advertisement dots */}
-
-        {/* {topAds.length > 1 ? (
-          <View className="mt-3 flex-row items-center justify-center gap-1.5">
-            <View className="h-2 w-2 rounded-full bg-primary" />
-            <View className="h-2 w-2 rounded-full bg-slate-300" />
-            <View className="h-2 w-2 rounded-full bg-slate-300" />
-            <View className="h-2 w-2 rounded-full bg-slate-300" />
-          </View>
-        ) : null} */}
-
-        {/* Breaking news */}
+        {/* ===================================================
+            BREAKING NEWS
+        =================================================== */}
 
         <SectionHeader
           title="Breaking News"
+
           onViewAll={() => {
+
             router.navigate({
-              pathname: '/news',
+              pathname:
+                '/news',
+
               params: {
-                type: 'breaking',
+                type:
+                  'breaking',
               },
             });
+
           }}
         />
 
+
         {isBreakingLoading ? (
+
           <View className="h-64 items-center justify-center">
-            <LoadingView message="Loading breaking news..." />
+
+            <LoadingView
+              message="Loading breaking news..."
+            />
+
           </View>
+
         ) : breakingError ? (
+
           <View className="rounded-2xl bg-red-50 p-4">
+
             <Text className="text-sm font-semibold text-red-600">
               {breakingError}
             </Text>
+
           </View>
-        ) : breakingNews.length >
-          0 ? (
+
+        ) : breakingNews.length > 0 ? (
+
           <BreakingCarousel
-            news={breakingNews}
+            news={
+              breakingNews
+            }
           />
+
         ) : (
+
           <View className="rounded-2xl bg-slate-50 px-4 py-10">
+
             <Text className="text-center text-sm font-semibold text-textMuted">
               No breaking news available
             </Text>
+
           </View>
+
         )}
 
-        {/* Categories */}
+
+        {/* ===================================================
+            CATEGORIES
+        =================================================== */}
 
         <View className="mt-7">
+
           <View className="mb-3 flex-row items-center justify-between">
+
             <Text className="text-xl font-black text-textMain">
               Categories
             </Text>
 
+
             <Pressable
               onPress={() =>
-                router.push('/categories')
+                router.push(
+                  '/categories',
+                )
               }
+
               hitSlop={10}
+
               className="flex-row items-center"
             >
+
               <Text className="text-sm font-bold text-primary">
                 View All
               </Text>
@@ -290,88 +501,258 @@ export default function HomeScreen() {
                 size={16}
                 color="#F0442D"
               />
+
             </Pressable>
+
           </View>
+
 
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator={false}
+
+            showsHorizontalScrollIndicator={
+              false
+            }
+
             contentContainerStyle={{
               gap: 12,
               paddingRight: 14,
             }}
           >
-            {categories.map((category) => (
-              <Pressable
-                key={category.id}
-                onPress={() =>
-                  openCategory(
-                    category.label,
-                  )
-                }
-                className="h-32 w-28 overflow-hidden rounded-2xl bg-slate-900 active:opacity-80"
-              >
-                <Image
-                  source={{
-                    uri: category.image,
-                  }}
-                  resizeMode="cover"
-                  className="h-full w-full"
-                />
 
-                <View className="absolute inset-0 bg-black/35" />
+            {categories.map(
+              (category) => (
 
-                <View className="absolute bottom-0 left-0 right-0 p-3">
-                  <Text
-                    numberOfLines={1}
-                    className="text-sm font-black text-white"
-                  >
-                    {category.label}
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
+                <Pressable
+                  key={
+                    category.id
+                  }
+
+                  onPress={() =>
+                    openCategory(
+                      category.label,
+                    )
+                  }
+
+                  className="h-32 w-28 overflow-hidden rounded-2xl bg-slate-900 active:opacity-80"
+                >
+
+                  <Image
+                    source={{
+                      uri:
+                        category.image,
+                    }}
+
+                    resizeMode="cover"
+
+                    className="h-full w-full"
+                  />
+
+
+                  <View className="absolute inset-0 bg-black/35" />
+
+
+                  <View className="absolute bottom-0 left-0 right-0 p-3">
+
+                    <Text
+                      numberOfLines={
+                        1
+                      }
+
+                      className="text-sm font-black text-white"
+                    >
+                      {
+                        category.label
+                      }
+                    </Text>
+
+                  </View>
+
+                </Pressable>
+
+              ),
+            )}
+
           </ScrollView>
+
         </View>
 
-        {/* Latest news */}
+
+        {/* ===================================================
+            TRENDING NEWS
+        =================================================== */}
 
         <SectionHeader
-          title="Latest News"
-          className="mt-7"
+          title="Trending News"
           onViewAll={() => {
-            router.navigate('/news');
+            router.navigate({
+              pathname: '/news',
+              params: {
+                type: 'trending',
+              },
+            });
           }}
         />
 
-        <View>
-          {latestNews.length > 0 ? (
-            latestNews.map(
+
+        {isTrendingLoading ? (
+
+          <View className="h-40 items-center justify-center">
+
+            <LoadingView
+              message="Loading trending news..."
+            />
+
+          </View>
+
+        ) : trendingError ? (
+
+          <View className="rounded-2xl bg-red-50 p-4">
+
+            <Text className="text-sm font-semibold text-red-600">
+              {trendingError}
+            </Text>
+
+          </View>
+
+        ) : trendingNews.length > 0 ? (
+
+          <View>
+
+            {trendingNews
+              .slice(0, 5)
+              .map(
+                (item) => (
+
+                  <LatestNewsItem
+                    key={
+                      item.id
+                    }
+
+                    item={
+                      item
+                    }
+
+                    language={
+                      appLanguage
+                    }
+
+                    onPress={() =>
+                      openContent(
+                        item,
+                      )
+                    }
+                  />
+
+                ),
+              )}
+
+          </View>
+
+        ) : (
+
+          <View className="rounded-2xl bg-slate-50 px-4 py-10">
+
+            <Text className="text-center text-sm font-semibold text-textMuted">
+              No trending news available
+            </Text>
+
+          </View>
+
+        )}
+
+
+        {/* ===================================================
+            LATEST NEWS
+        =================================================== */}
+
+        <SectionHeader
+          title="Latest News"
+
+          className="mt-7"
+
+          onViewAll={() => {
+            router.navigate(
+              '/news',
+            );
+          }}
+        />
+
+
+        {isNewsLoading ? (
+
+          <View className="h-40 items-center justify-center">
+
+            <LoadingView
+              message="Loading latest news..."
+            />
+
+          </View>
+
+        ) : newsError ? (
+
+          <View className="rounded-2xl bg-red-50 p-4">
+
+            <Text className="text-sm font-semibold text-red-600">
+              {newsError}
+            </Text>
+
+          </View>
+
+        ) : latestNews.length > 0 ? (
+
+          <View>
+
+            {latestNews.map(
               (item) => (
+
                 <LatestNewsItem
-                  key={item.id}
-                  item={item}
+                  key={
+                    item.id
+                  }
+
+                  item={
+                    item
+                  }
+
                   language={
                     appLanguage
                   }
+
                   onPress={() =>
-                    openContent(item)
+                    openContent(
+                      item,
+                    )
                   }
                 />
+
               ),
-            )
-          ) : (
-            <View className="rounded-2xl bg-slate-50 px-4 py-10">
-              <Text className="text-center text-sm font-semibold text-textMuted">
-                No latest news available
-              </Text>
-            </View>
-          )}
-        </View>
+            )}
+
+          </View>
+
+        ) : (
+
+          <View className="rounded-2xl bg-slate-50 px-4 py-10">
+
+            <Text className="text-center text-sm font-semibold text-textMuted">
+              No latest news available
+            </Text>
+
+          </View>
+
+        )}
+
       </ScrollView>
+
     </SafeAreaView>
   );
 }
+
+
+// ============================================================
+// SECTION HEADER
+// ============================================================
 
 type SectionHeaderProps = {
   title: string;
@@ -379,30 +760,53 @@ type SectionHeaderProps = {
   className?: string;
 };
 
+
 function SectionHeader({
   title,
   onViewAll,
   className = '',
 }: SectionHeaderProps) {
+
   return (
+
     <View
-      className={`mb-3 mt-6 flex-row items-center justify-between ${className}`}
+      className={`
+        mb-3
+        mt-6
+        flex-row
+        items-center
+        justify-between
+        ${className}
+      `}
     >
+
       <Text className="text-xl font-black text-textMain">
         {title}
       </Text>
 
+
       <Pressable
-        onPress={onViewAll}
+        onPress={
+          onViewAll
+        }
+
         hitSlop={8}
       >
+
         <Text className="text-sm font-bold text-primary">
           View All
         </Text>
+
       </Pressable>
+
     </View>
   );
 }
+
+
+// ============================================================
+// LATEST / TRENDING NEWS ITEM
+// ============================================================
 
 type LatestNewsItemProps = {
   item: FeedItem;
@@ -410,109 +814,170 @@ type LatestNewsItemProps = {
   onPress: () => void;
 };
 
+
 function LatestNewsItem({
   item,
   language,
   onPress,
 }: LatestNewsItemProps) {
+
   const {
     isSaved,
     toggleSaved,
   } = useSavedContent();
 
+
   const itemIsSaved =
     isSaved(item.id);
+
 
   const displayDate =
     item.publishedAt ??
     item.createdAt;
 
+
   const imageUrl =
     item.thumbnailUrl ??
     item.mediaUrl;
 
+
   const publisherName =
     item.author?.trim() ||
     'News Publisher';
+
 
   const publisherImage =
     getPublisherImage(
       publisherName,
     );
 
+
   return (
+
     <Pressable
-      onPress={onPress}
+      onPress={
+        onPress
+      }
+
       className="mb-5 overflow-hidden rounded-[22px] border border-slate-100 bg-white active:opacity-80"
+
       style={{
-        shadowColor: '#101828',
+        shadowColor:
+          '#101828',
+
         shadowOffset: {
           width: 0,
           height: 3,
         },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+
+        shadowOpacity:
+          0.05,
+
+        shadowRadius:
+          8,
+
         elevation: 2,
       }}
     >
-      {/* News image */}
+
+      {/* ====================================================
+          IMAGE
+      ==================================================== */}
 
       <View className="relative">
+
         <Image
           source={{
-            uri: imageUrl,
+            uri:
+              imageUrl,
           }}
+
           resizeMode="cover"
+
           className="h-44 w-full bg-slate-100"
         />
 
+
         <View className="absolute inset-0 bg-black/10" />
 
-        {/* Category overlay */}
+
+        {/* Category */}
 
         <View className="absolute left-4 top-4 max-w-[70%] rounded-full bg-white/95 px-3 py-1.5">
+
           <Text
-            numberOfLines={1}
+            numberOfLines={
+              1
+            }
+
             className="text-[10px] font-black uppercase tracking-wide text-[#F0442D]"
           >
-            {item.category}
+            {
+              item.category
+            }
           </Text>
+
         </View>
+
       </View>
 
-      {/* News content */}
+
+      {/* ====================================================
+          CONTENT
+      ==================================================== */}
 
       <View className="p-4">
+
         <Text
-          numberOfLines={3}
+          numberOfLines={
+            3
+          }
+
           className="text-[16px] font-extrabold leading-5 text-textMain"
         >
-          {item.title}
+          {
+            item.title
+          }
         </Text>
 
-        {/* Publisher details and save button */}
+
+        {/* Publisher */}
 
         <View className="mt-4 flex-row items-center">
+
           <Image
             source={{
-              uri: publisherImage,
+              uri:
+                publisherImage,
             }}
+
             resizeMode="cover"
+
             className="h-10 w-10 rounded-full bg-slate-200"
           />
 
+
           <View className="ml-3 flex-1">
+
             <Text
-              numberOfLines={1}
+              numberOfLines={
+                1
+              }
+
               className="text-[13px] font-extrabold tracking-wide text-[#F0442D]"
             >
-              {publisherName}
+              {
+                publisherName
+              }
             </Text>
 
+
             <View className="mt-1.5 flex-row items-center">
+
               {/* Time */}
 
               <View className="flex-row items-center rounded-full bg-slate-100 px-2.5 py-1">
+
                 <Ionicons
                   name="time-outline"
                   size={12}
@@ -520,15 +985,20 @@ function LatestNewsItem({
                 />
 
                 <Text className="ml-1 text-[10px] font-bold text-slate-600">
+
                   {formatPublishedTime(
                     displayDate,
                   )}
+
                 </Text>
+
               </View>
+
 
               {/* Views */}
 
               <View className="ml-2 flex-row items-center rounded-full bg-[#FFF1EE] px-2.5 py-1">
+
                 <Ionicons
                   name="eye-outline"
                   size={12}
@@ -536,48 +1006,72 @@ function LatestNewsItem({
                 />
 
                 <Text className="ml-1 text-[10px] font-bold text-[#F0442D]">
+
                   {formatViews(
-                    item.views ?? 0,
+                    item.views ??
+                      0,
                   )}{' '}
                   views
+
                 </Text>
+
               </View>
+
             </View>
+
           </View>
 
-          {/* Save button */}
+
+          {/* Save */}
 
           <Pressable
             hitSlop={10}
-            onPress={(event) => {
+
+            onPress={(
+              event,
+            ) => {
+
               event.stopPropagation();
 
-              void toggleSaved(item);
+              void toggleSaved(
+                item,
+              );
+
             }}
+
             accessibilityRole="button"
+
             accessibilityLabel={
               itemIsSaved
                 ? 'Remove from saved'
                 : 'Save news'
             }
+
             className="ml-3 h-10 w-10 items-center justify-center rounded-full bg-[#FFF1EE]"
           >
+
             <Ionicons
               name={
                 itemIsSaved
                   ? 'bookmark'
                   : 'bookmark-outline'
               }
+
               size={21}
+
               color={
                 itemIsSaved
                   ? '#F0442D'
                   : '#667085'
               }
             />
+
           </Pressable>
+
         </View>
+
       </View>
+
     </Pressable>
   );
 }

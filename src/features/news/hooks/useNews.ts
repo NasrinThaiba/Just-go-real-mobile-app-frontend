@@ -1,67 +1,173 @@
-import { useEffect, useMemo, useState } from 'react';
+// src/features/news/hooks/useNews.ts
 
-import { getNews } from '@/features/news/api/news.api';
-import type { FeedItem } from '@/features/news/types/news.types';
 import {
-  filterNewsByCategory,
-  filterNewsByLanguage,
-} from '@/features/news/utils/news.utils';
-import type { SupportedLanguage } from '@/types/common.types';
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
-export function useNews(language: SupportedLanguage) {
-  const [news, setNews] = useState<FeedItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+import {
+  getNews,
+} from '@/features/news/api/news.api';
 
-  const loadNews = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+import type {
+  FeedItem,
+  SupportedLanguage,
+} from '@/features/news/types/news.types';
 
-      const result = await getNews();
-      setNews(result);
-    } catch (loadError) {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : 'Unable to load news',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+type UseNewsResult = {
+  items: FeedItem[];
+
+  businessNews: FeedItem[];
+
+  scienceNews: FeedItem[];
+
+  sportsNews: FeedItem[];
+
+  isLoading: boolean;
+
+  error: string | null;
+
+  refetch: () => Promise<void>;
+};
+
+
+export function useNews(
+  language: SupportedLanguage,
+): UseNewsResult {
+
+  const [news, setNews] =
+    useState<FeedItem[]>([]);
+
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+
+  const loadNews =
+    useCallback(async () => {
+
+      try {
+
+        setIsLoading(true);
+
+        setError(null);
+
+
+        const result =
+          await getNews({
+            language,
+            page: 1,
+            limit: 50,
+          });
+
+
+        setNews(result);
+
+      } catch (loadError) {
+
+        console.error(
+          'GET NEWS ERROR:',
+          loadError,
+        );
+
+
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : 'Unable to load news',
+        );
+
+        setNews([]);
+
+      } finally {
+
+        setIsLoading(false);
+
+      }
+
+    }, [language]);
+
 
   useEffect(() => {
+
     void loadNews();
-  }, []);
 
-  const items = useMemo(
-    () => filterNewsByLanguage(news, language),
-    [news, language],
-  );
+  }, [loadNews]);
 
-  const businessNews = useMemo(
-    () => filterNewsByCategory(news, 'Business', language),
-    [news, language],
-  );
 
-  const scienceNews = useMemo(
-    () => filterNewsByCategory(news, 'Science', language),
-    [news, language],
-  );
+  const items =
+    useMemo(() => {
 
-  const sportsNews = useMemo(
-    () => filterNewsByCategory(news, 'Sports', language),
-    [news, language],
-  );
+      return news.filter(
+        (item) =>
+          item.type === 'news' &&
+          item.status === 'published' &&
+          item.language === language,
+      );
+
+    }, [
+      news,
+      language,
+    ]);
+
+
+  const businessNews =
+    useMemo(() => {
+
+      return items.filter(
+        (item) =>
+          item.category.toLowerCase() ===
+          'business',
+      );
+
+    }, [items]);
+
+
+  const scienceNews =
+    useMemo(() => {
+
+      return items.filter(
+        (item) =>
+          item.category.toLowerCase() ===
+          'science',
+      );
+
+    }, [items]);
+
+
+  const sportsNews =
+    useMemo(() => {
+
+      return items.filter(
+        (item) =>
+          item.category.toLowerCase() ===
+          'sports',
+      );
+
+    }, [items]);
+
 
   return {
+
     items,
+
     businessNews,
+
     scienceNews,
+
     sportsNews,
+
     isLoading,
+
     error,
+
     refetch: loadNews,
+
   };
+
 }

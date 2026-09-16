@@ -2,21 +2,27 @@
 
 import {
   useCallback,
+  useEffect,
   useState,
 } from 'react';
-import {
-  useFocusEffect,
-} from 'expo-router';
 
 import {
-  getCreatedNews,
-} from '@/features/news/storage/newsStorage';
+  getNews,
+} from '@/features/news/api/news.api';
 
 import type {
   FeedItem,
 } from '@/features/news/types/news.types';
 
-export function usePublishedNews() {
+import type {
+  SupportedLanguage,
+} from '@/types/common.types';
+
+
+export function usePublishedNews(
+  language: SupportedLanguage = 'en',
+) {
+
   const [news, setNews] =
     useState<FeedItem[]>([]);
 
@@ -29,60 +35,55 @@ export function usePublishedNews() {
   const [error, setError] =
     useState<string | null>(null);
 
-  const loadNews = useCallback(
-    async (
+
+  const loadNews =
+    useCallback(async (
       refreshing = false,
     ) => {
+
       try {
+
         if (refreshing) {
+
           setIsRefreshing(true);
+
         } else {
+
           setIsLoading(true);
+
         }
+
 
         setError(null);
 
-        const createdNews =
-          await getCreatedNews();
+
+        const result =
+          await getNews({
+            language,
+            page: 1,
+            limit: 50,
+          });
+
 
         const publishedNews =
-          createdNews
-            .filter(
-              (item) =>
-                item.type ===
-                  'news' &&
-                item.status ===
-                  'published',
-            )
-            .sort(
-              (first, second) => {
-                const firstDate =
-                  first.publishedAt ??
-                  first.createdAt ??
-                  0;
+          result.filter(
+            (item) =>
+              item.type === 'news' &&
+              item.status === 'published',
+          );
 
-                const secondDate =
-                  second.publishedAt ??
-                  second.createdAt ??
-                  0;
 
-                return (
-                  new Date(
-                    secondDate,
-                  ).getTime() -
-                  new Date(
-                    firstDate,
-                  ).getTime()
-                );
-              },
-            );
+        setNews(
+          publishedNews,
+        );
 
-        setNews(publishedNews);
       } catch (loadError) {
+
         console.error(
-          'Failed to load published news:',
+          'GET PUBLISHED NEWS ERROR:',
           loadError,
         );
+
 
         setNews([]);
 
@@ -91,27 +92,38 @@ export function usePublishedNews() {
             ? loadError.message
             : 'Unable to load published news.',
         );
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
-    },
-    [],
-  );
 
-  useFocusEffect(
-    useCallback(() => {
-      void loadNews();
-    }, [loadNews]),
-  );
+      } finally {
+
+        setIsLoading(false);
+
+        setIsRefreshing(false);
+
+      }
+
+    }, [language]);
+
+
+  useEffect(() => {
+
+    void loadNews();
+
+  }, [loadNews]);
+
 
   return {
+
     news,
+
     isLoading,
+
     isRefreshing,
+
     error,
 
     refetch: () =>
       loadNews(true),
+
   };
+
 }
