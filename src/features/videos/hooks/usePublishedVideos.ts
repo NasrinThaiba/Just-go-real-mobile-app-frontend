@@ -2,74 +2,182 @@ import {
   useCallback,
   useState,
 } from 'react';
+
 import {
   useFocusEffect,
 } from 'expo-router';
 
+
 import {
-  getCreatedVideos,
-} from '@/features/videos/storage/videoStorage';
+  videosApi,
+} from '@/features/videos/api/videos.api';
+
 
 import type {
-  FeedItem,
-} from '@/features/news/types/news.types';
+  VideoItem,
+} from '@/features/videos/types/videos.types';
+
+
 
 export function usePublishedVideos() {
-  const [videos, setVideos] =
-    useState<FeedItem[]>([]);
 
-  const [isLoading, setIsLoading] =
-    useState(true);
+
+  const [
+    videos,
+    setVideos,
+  ] =
+  useState<VideoItem[]>([]);
+
+
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+  useState(true);
+
+
+
+  const [
+    error,
+    setError,
+  ] =
+  useState<string | null>(null);
+
+
+
 
   const loadVideos =
-    useCallback(async () => {
+    useCallback(async()=>{
+
+
       try {
+
+
         setIsLoading(true);
 
-        const localVideos =
-          await getCreatedVideos();
+        setError(null);
+
+
+
+        const result =
+          await videosApi.getVideos();
+
+
 
         const publishedVideos =
-          localVideos.filter(
-            (item) =>
-              item.status ===
-              'published',
+          result
+
+          .filter(
+            (item)=>
+              item.type === 'video' &&
+              item.status === 'published',
+          )
+
+          .sort(
+            (
+              first,
+              second,
+            )=>{
+
+
+              const firstDate =
+                first.publishedAt ??
+                first.createdAt;
+
+
+              const secondDate =
+                second.publishedAt ??
+                second.createdAt;
+
+
+
+              return (
+
+                new Date(secondDate)
+                  .getTime()
+
+                -
+
+                new Date(firstDate)
+                  .getTime()
+
+              );
+
+
+            },
           );
 
+
+
         setVideos(
-          publishedVideos.sort(
-            (first, second) =>
-              new Date(
-                second.publishedAt ??
-                  second.createdAt ??
-                  0,
-              ).getTime() -
-              new Date(
-                first.publishedAt ??
-                  first.createdAt ??
-                  0,
-              ).getTime(),
-          ),
+          publishedVideos,
         );
-      } catch (error) {
+
+
+      } catch(error) {
+
+
         console.error(
           'Failed to load published videos:',
           error,
         );
+
+
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to load videos',
+        );
+
+
       } finally {
+
+
         setIsLoading(false);
+
+
       }
-    }, []);
+
+
+
+    },[]);
+
+
+
 
   useFocusEffect(
-    useCallback(() => {
+
+    useCallback(()=>{
+
+
       void loadVideos();
-    }, [loadVideos]),
+
+
+      return undefined;
+
+
+    },[
+      loadVideos,
+    ]),
+
+
   );
 
+
+
+
   return {
+
     videos,
+
     isLoading,
+
+    error,
+
     refetch: loadVideos,
+
   };
+
+
 }

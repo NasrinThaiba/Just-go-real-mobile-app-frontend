@@ -12,8 +12,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/ui/EmptyState';
-import { useNews } from '@/features/news/hooks/useNews';
-import type { FeedItem } from '@/features/news/types/news.types';
+import { useVideos } from '@/features/videos/hooks/useVideos';
+
+import type {
+  VideoItem,
+} from '@/features/videos/types/videos.types';
 import { useAppLanguage } from '@/hooks/useAppLanguage';
 import {
   formatPublishedTime,
@@ -30,7 +33,7 @@ export default function LiveVideoIndexScreen() {
   const {
     items,
     isLoading,
-  } = useNews(currentLanguage);
+  } = useVideos(currentLanguage);
 
   const liveVideos =
     useMemo(() => {
@@ -84,7 +87,7 @@ export default function LiveVideoIndexScreen() {
     ]);
 
   const openLiveVideo = (
-    item: FeedItem,
+    item: VideoItem,
   ) => {
     router.push({
       pathname:
@@ -186,7 +189,7 @@ export default function LiveVideoIndexScreen() {
 }
 
 type LiveVideoCardProps = {
-  item: FeedItem;
+  item: VideoItem;
   onPress: () => void;
 };
 

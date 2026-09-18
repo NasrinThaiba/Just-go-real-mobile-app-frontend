@@ -4,83 +4,162 @@ import {
   useState,
 } from 'react';
 
-import { getCreatedVideoById } from '@/features/videos/storage/videoStorage';
+
+import {
+  videosApi,
+} from '@/features/videos/api/videos.api';
+
 
 import type {
   VideoItem,
 } from '@/features/videos/types/videos.types';
 
+
+
 export function useVideoDetails(
-  id: string,
+  id:string,
 ) {
-  const [item, setItem] =
-    useState<VideoItem | null>(
-      null,
-    );
 
-  const [isLoading, setIsLoading] =
-    useState(true);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [
+    item,
+    setItem,
+  ] =
+  useState<VideoItem | null>(null);
+
+
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] =
+  useState(true);
+
+
+
+  const [
+    error,
+    setError,
+  ] =
+  useState<string | null>(null);
+
+
+
 
   const loadVideo =
-    useCallback(async () => {
-      if (!id) {
-        setItem(null);
+    useCallback(async()=>{
+
+
+      if(!id){
+
         setError(
-          'Video ID is required.',
+          'Video id required',
         );
+
         setIsLoading(false);
+
         return;
+
       }
 
+
+
       try {
+
+
         setIsLoading(true);
+
         setError(null);
 
+
+
         const video =
-          await getCreatedVideoById(
+          await videosApi.getVideoById(
             id,
           );
 
-        if (
-          !video ||
-          video.type !== 'video'
-        ) {
+
+
+        if(!video){
+
+
           setItem(null);
+
+
           setError(
-            'Video not found.',
+            'Video not found',
           );
+
+
           return;
+
         }
 
+
+
         setItem(
-          video as VideoItem,
+          video,
         );
-      } catch (loadError) {
+
+
+
+      } catch(error) {
+
+
         console.error(
           'Failed to load video:',
-          loadError,
+          error,
         );
 
-        setItem(null);
+
         setError(
-          'Unable to load video.',
+          error instanceof Error
+            ? error.message
+            : 'Unable to load video',
         );
-      } finally {
-        setIsLoading(false);
-      }
-    }, [id]);
 
-  useEffect(() => {
+
+
+      } finally {
+
+
+        setIsLoading(false);
+
+
+      }
+
+
+    },[
+      id,
+    ]);
+
+
+
+
+  useEffect(()=>{
+
+
     void loadVideo();
-  }, [loadVideo]);
+
+
+  },[
+    loadVideo,
+  ]);
+
+
+
 
   return {
+
     item,
+
     isLoading,
+
     error,
+
     refetch: loadVideo,
+
   };
+
+
 }

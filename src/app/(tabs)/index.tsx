@@ -23,6 +23,7 @@ import { LoadingView } from '@/components/ui/LoadingView';
 import { useAds } from '@/features/ads/hooks/useAds';
 
 import { useBreakingNews } from '@/features/news/hooks/useBreakingNews';
+import { useBreakingVideos } from '@/features/videos/hooks/useBreakingVideos';
 
 import { useNews } from '@/features/news/hooks/useNews';
 
@@ -155,6 +156,25 @@ export default function HomeScreen() {
       breakingError,
 
   } = useBreakingNews(
+    currentLanguage,
+  );
+
+
+  // ==========================================================
+  // BREAKING VIDEOS
+  // Backend:
+  // GET /videos/breaking
+  // ==========================================================
+
+  const {
+    items: breakingVideos,
+
+    isLoading:
+      isBreakingVideosLoading,
+
+    error:
+      breakingVideosError,
+  } = useBreakingVideos(
     currentLanguage,
   );
 
@@ -446,13 +466,17 @@ export default function HomeScreen() {
 
           </View>
 
-        ) : breakingNews.length > 0 ? (
+        ) : (
+            breakingNews.length > 0 ||
+            breakingVideos.length > 0
+          ) ? (
 
           <BreakingCarousel
-            news={
-              breakingNews
-            }
-          />
+              news={[
+                ...breakingNews,
+                ...breakingVideos,
+              ]}
+            />
 
         ) : (
 
