@@ -6,250 +6,392 @@ import type {
   StoredComment,
 } from '@/features/interactions/types/interaction.types';
 
+
 const INTERACTIONS_KEY =
   '@just_go_real/content_interactions';
 
-type StoredInteractions = Record<
-  string,
-  ContentInteraction
->;
+
+
+type StoredInteractions =
+  Record<
+    string,
+    ContentInteraction
+  >;
+
+
 
 function createDefaultInteraction(
-  contentId: string,
-): ContentInteraction {
+  contentId:string,
+):ContentInteraction {
+
   return {
     contentId,
-    isFavorite: false,
-    isBookmarked: false,
-    comments: [],
+    isFavorite:false,
+    isBookmarked:false,
+    likes:0,
+    shares:0,
+    comments:[],
+
   };
+
 }
 
-async function getAllInteractions(): Promise<StoredInteractions> {
-  try {
-    const storedValue =
+
+
+
+async function getAllInteractions()
+:Promise<StoredInteractions>{
+
+  try{
+
+    const value =
       await AsyncStorage.getItem(
         INTERACTIONS_KEY,
       );
 
-    if (!storedValue) {
+
+    if(!value){
       return {};
     }
 
+
     return JSON.parse(
-      storedValue,
-    ) as StoredInteractions;
-  } catch (error) {
+      value,
+    );
+
+
+  }catch(error){
+
     console.error(
-      'Failed to load interactions:',
+      'Failed loading interactions',
       error,
     );
 
     return {};
+
   }
+
 }
+
+
+
+
 
 async function saveAllInteractions(
-  interactions: StoredInteractions,
-): Promise<void> {
+  data:StoredInteractions,
+){
+
   await AsyncStorage.setItem(
     INTERACTIONS_KEY,
-    JSON.stringify(
-      interactions,
-    ),
+    JSON.stringify(data),
   );
+
 }
 
+
+
+
+
+
+
 export async function getContentInteraction(
-  contentId: string,
-): Promise<ContentInteraction> {
+  contentId:string,
+):Promise<ContentInteraction>{
+
+
   const interactions =
     await getAllInteractions();
 
+
   return (
-    interactions[contentId] ??
+    interactions[contentId]
+    ??
     createDefaultInteraction(
       contentId,
     )
   );
+
 }
 
-export async function toggleStoredFavorite(
-  contentId: string,
-): Promise<ContentInteraction> {
-  const interactions =
-    await getAllInteractions();
 
-  const current =
-    interactions[contentId] ??
-    createDefaultInteraction(
-      contentId,
-    );
 
-  const updated: ContentInteraction = {
-    ...current,
-    isFavorite:
-      !current.isFavorite,
-  };
 
-  interactions[contentId] =
-    updated;
 
-  await saveAllInteractions(
-    interactions,
-  );
 
-  return updated;
-}
+
+
+
+// BOOKMARK ONLY
 
 export async function toggleStoredBookmark(
-  contentId: string,
-): Promise<ContentInteraction> {
-  const interactions =
-    await getAllInteractions();
+  contentId:string,
+)
+:Promise<ContentInteraction>{
 
-  const current =
-    interactions[contentId] ??
-    createDefaultInteraction(
-      contentId,
-    );
 
-  const updated: ContentInteraction = {
-    ...current,
-    isBookmarked:
-      !current.isBookmarked,
-  };
+ const interactions =
+   await getAllInteractions();
 
-  interactions[contentId] =
-    updated;
 
-  await saveAllInteractions(
-    interactions,
-  );
 
-  return updated;
+ const current =
+   interactions[contentId]
+   ??
+   createDefaultInteraction(
+     contentId,
+   );
+
+
+
+ const updated =
+ {
+   ...current,
+
+   isBookmarked:
+     !current.isBookmarked,
+
+ };
+
+
+
+ interactions[contentId] =
+   updated;
+
+
+
+ await saveAllInteractions(
+   interactions,
+ );
+
+
+
+ return updated;
+
+
 }
+
+
+
+
+
+
+
+
+
+// COMMENTS TEMPORARY
 
 export async function addStoredComment(
-  contentId: string,
-  message: string,
-  currentUser: InteractionUser,
-): Promise<ContentInteraction> {
-  const trimmedMessage =
-    message.trim();
+ contentId:string,
+ message:string,
+ currentUser:InteractionUser,
+)
+:Promise<ContentInteraction>{
 
-  if (!trimmedMessage) {
-    throw new Error(
-      'Comment cannot be empty',
-    );
-  }
 
-  const interactions =
-    await getAllInteractions();
+ const text =
+   message.trim();
 
-  const current =
-    interactions[contentId] ??
-    createDefaultInteraction(
-      contentId,
-    );
 
-  const newComment: StoredComment = {
-    id: `${Date.now()}-${Math.random()
-      .toString(36)
-      .slice(2)}`,
-    author:
-      currentUser.name,
-    authorId:
-      currentUser.id,
-    authorRole:
-      currentUser.role,
-    message:
-      trimmedMessage,
-    createdAt:
-      new Date().toISOString(),
-  };
 
-  const updated: ContentInteraction = {
-    ...current,
-    comments: [
-      ...current.comments,
-      newComment,
-    ],
-  };
+ if(!text){
 
-  interactions[contentId] =
-    updated;
-
-  await saveAllInteractions(
-    interactions,
+  throw new Error(
+    'Comment cannot be empty',
   );
 
-  return updated;
+ }
+
+
+
+
+ const interactions =
+   await getAllInteractions();
+
+
+
+ const current =
+   interactions[contentId]
+   ??
+   createDefaultInteraction(
+    contentId,
+   );
+
+
+
+
+ const comment:StoredComment =
+ {
+
+   id:
+    `${Date.now()}`,
+
+   author:
+    currentUser.name,
+
+   authorId:
+    currentUser.id,
+
+   authorRole:
+    currentUser.role,
+
+
+   message:
+    text,
+
+
+   createdAt:
+    new Date()
+    .toISOString(),
+
+ };
+
+
+
+
+ const updated =
+ {
+
+  ...current,
+
+
+  comments:
+   [
+    ...current.comments,
+
+    comment,
+   ],
+
+ };
+
+
+
+ interactions[contentId] =
+   updated;
+
+
+
+ await saveAllInteractions(
+   interactions,
+ );
+
+
+
+ return updated;
+
+
 }
+
+
+
+
+
+
+
+
 
 export async function deleteStoredComment(
-  contentId: string,
-  commentId: string,
-  currentUser: InteractionUser,
-): Promise<ContentInteraction> {
-  const interactions =
-    await getAllInteractions();
+ contentId:string,
+ commentId:string,
+ currentUser:InteractionUser,
+)
+:Promise<ContentInteraction>{
 
-  const current =
-    interactions[contentId] ??
-    createDefaultInteraction(
-      contentId,
-    );
 
-  const selectedComment =
-    current.comments.find(
-      (comment) =>
-        comment.id ===
-        commentId,
-    );
+ const interactions =
+   await getAllInteractions();
 
-  if (!selectedComment) {
-    throw new Error(
-      'Comment not found',
-    );
-  }
 
-  const isOwner =
-    selectedComment.authorId ===
-    currentUser.id;
 
-  const isAdmin =
-    currentUser.role ===
-    'admin';
+ const current =
+   interactions[contentId]
+   ??
+   createDefaultInteraction(
+    contentId,
+   );
 
-  if (!isOwner && !isAdmin) {
-    throw new Error(
-      'You cannot delete this comment',
-    );
-  }
 
-  const updated: ContentInteraction = {
-    ...current,
-    comments:
-      current.comments.filter(
-        (comment) =>
-          comment.id !==
-          commentId,
-      ),
-  };
 
-  interactions[contentId] =
-    updated;
 
-  await saveAllInteractions(
-    interactions,
+ const comment =
+   current.comments.find(
+    item =>
+     item.id === commentId,
+   );
+
+
+
+ if(!comment){
+
+  throw new Error(
+   'Comment not found',
   );
 
-  return updated;
+ }
+
+
+
+
+ const canDelete =
+   comment.authorId === currentUser.id
+   ||
+   currentUser.role === 'admin';
+
+
+
+
+ if(!canDelete){
+
+  throw new Error(
+   'Cannot delete comment',
+  );
+
+ }
+
+
+
+
+ const updated =
+ {
+
+  ...current,
+
+  comments:
+   current.comments.filter(
+    item =>
+     item.id !== commentId,
+   ),
+
+ };
+
+
+
+ interactions[contentId] =
+   updated;
+
+
+
+ await saveAllInteractions(
+   interactions,
+ );
+
+
+
+ return updated;
+
+
 }
 
-export async function clearStoredInteractions(): Promise<void> {
-  await AsyncStorage.removeItem(
-    INTERACTIONS_KEY,
-  );
+
+
+
+
+
+
+
+export async function clearStoredInteractions(){
+
+ await AsyncStorage.removeItem(
+   INTERACTIONS_KEY,
+ );
+
 }
