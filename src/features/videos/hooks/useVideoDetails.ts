@@ -1,165 +1,98 @@
 import {
-  useCallback,
-  useEffect,
-  useState,
+ useEffect,
+ useState,
 } from 'react';
 
-
 import {
-  videosApi,
-} from '@/features/videos/api/videos.api';
-
+ videosApi,
+} from '../api/videos.api';
 
 import type {
-  VideoItem,
-} from '@/features/videos/types/videos.types';
+ VideoItem,
+} from '../types/videos.types';
 
 
 
 export function useVideoDetails(
-  id:string,
-) {
+ id:string
+){
 
+ const [
+  item,
+  setItem
+ ] =
+ useState<VideoItem|null>(null);
 
-  const [
-    item,
-    setItem,
-  ] =
-  useState<VideoItem | null>(null);
 
+ const [
+  isLoading,
+  setLoading
+ ] =
+ useState(true);
 
 
-  const [
-    isLoading,
-    setIsLoading,
-  ] =
-  useState(true);
+ const [
+  error,
+  setError
+ ] =
+ useState<string|null>(null);
 
 
 
-  const [
-    error,
-    setError,
-  ] =
-  useState<string | null>(null);
+ useEffect(()=>{
 
 
+  if(!id){
+   return;
+  }
 
 
-  const loadVideo =
-    useCallback(async()=>{
+  async function load(){
 
+   try{
 
-      if(!id){
+    setLoading(true);
 
-        setError(
-          'Video id required',
-        );
 
-        setIsLoading(false);
+    const video =
+     await videosApi.getVideoById(
+      id
+     );
 
-        return;
 
-      }
+    setItem(video);
 
 
+   }
+   catch(error){
 
-      try {
+    setError(
+     error instanceof Error
+      ? error.message
+      : 'Video not found'
+    );
 
+   }
+   finally{
 
-        setIsLoading(true);
+    setLoading(false);
 
-        setError(null);
+   }
 
+  }
 
 
-        const video =
-          await videosApi.getVideoById(
-            id,
-          );
+  void load();
 
 
+ },[id]);
 
-        if(!video){
 
 
-          setItem(null);
-
-
-          setError(
-            'Video not found',
-          );
-
-
-          return;
-
-        }
-
-
-
-        setItem(
-          video,
-        );
-
-
-
-      } catch(error) {
-
-
-        console.error(
-          'Failed to load video:',
-          error,
-        );
-
-
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Unable to load video',
-        );
-
-
-
-      } finally {
-
-
-        setIsLoading(false);
-
-
-      }
-
-
-    },[
-      id,
-    ]);
-
-
-
-
-  useEffect(()=>{
-
-
-    void loadVideo();
-
-
-  },[
-    loadVideo,
-  ]);
-
-
-
-
-  return {
-
-    item,
-
-    isLoading,
-
-    error,
-
-    refetch: loadVideo,
-
-  };
-
+ return {
+  item,
+  isLoading,
+  error,
+ };
 
 }

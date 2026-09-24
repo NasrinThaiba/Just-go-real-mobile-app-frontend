@@ -16,8 +16,8 @@ import {
 
 
 import {
-  toggleStoredBookmark,
-} from '@/features/interactions/storage/interactionStorage';
+  SavedApi,
+} from '@/features/saved/api/saved.api';
 
 
 
@@ -345,114 +345,78 @@ interaction
 // =====================
 
 
+// =====================
+// BOOKMARK
+// =====================
+
 const toggleBookmark =
 useCallback(async()=>{
 
 
-const result =
-await toggleStoredBookmark(
-contentId
-);
-
-
-
-
-const updated={
-
-
- ...interaction,
-
-
- isBookmarked:
- result.isBookmarked,
-
-
-
-};
-
-
-
-setInteraction(updated);
-
-
-
-return updated;
-
-
-
-},[
-contentId,
-interaction
-]);
-
-
-
-
-
-
-
-
-
-// =====================
-// ADD COMMENT
-// =====================
-
-
-const addComment =
-useCallback(async(
-
- message:string
-
-)=>{
-
-
 if(!currentUser?.token){
 
-throw new Error(
-"Please login to comment"
-);
+ throw new Error(
+  "Please login"
+ );
+
+}
+
+
+
+try{
+
+
+let bookmarked:boolean;
+
+
+
+if(interaction.isBookmarked){
+
+
+ await SavedApi.remove(
+
+  contentId,
+
+  currentUser.token
+
+ );
+
+
+ bookmarked = false;
+
+
+}
+else{
+
+
+ await SavedApi.add(
+
+  contentId,
+
+  currentUser.token
+
+ );
+
+
+ bookmarked = true;
+
 
 }
 
 
 
 
-
-const comment =
-await commentsApi.createComment(
-
-contentId,
-
-message,
-
-currentUser.token
-
-);
-
-
-
-
-
-
-const updated:ContentInteraction={
+const updated:ContentInteraction = {
 
 
  ...interaction,
 
 
- comments:[
-
-  ...interaction.comments,
-
-  comment,
-
- ],
-
+ isBookmarked:
+  bookmarked,
 
 
 };
-
-
 
 
 
@@ -464,16 +428,86 @@ return updated;
 
 
 
+}
+catch(error){
+
+
+console.error(
+ "Bookmark update failed",
+ error
+);
+
+
+throw error;
+
+
+}
+
+
+
 },[
-contentId,
-currentUser,
-interaction
+ contentId,
+ currentUser,
+ interaction
 ]);
 
 
+// =====================
+// ADD COMMENT
+// =====================
+
+const addComment =
+useCallback(
+async(
+  message:string,
+)=>{
+
+
+if(!currentUser?.token){
+
+ throw new Error(
+  "Please login to comment"
+ );
+
+}
 
 
 
+const comment =
+await commentsApi.createComment(
+ contentId,
+ message,
+ currentUser.token
+);
+
+
+
+const updated:ContentInteraction = {
+
+ ...interaction,
+
+ comments:[
+  ...interaction.comments,
+  comment,
+ ],
+
+};
+
+
+
+setInteraction(updated);
+
+
+return updated;
+
+
+},
+[
+ contentId,
+ currentUser,
+ interaction,
+]
+);
 
 
 
@@ -482,79 +516,56 @@ interaction
 // DELETE COMMENT
 // =====================
 
-
 const deleteComment =
-useCallback(async(
-
- commentId:string
-
+useCallback(
+async(
+ commentId:string,
 )=>{
 
 
 if(!currentUser?.token){
 
-throw new Error(
-"Please login"
-);
+ throw new Error(
+  "Please login"
+ );
 
 }
 
 
 
-
-
 await commentsApi.deleteComment(
-
-commentId,
-
-currentUser.token
-
+ commentId,
+ currentUser.token
 );
 
 
 
-
-
-
-const updated:ContentInteraction={
-
+const updated:ContentInteraction = {
 
  ...interaction,
 
-
  comments:
-
  interaction.comments.filter(
-
- (comment)=>
-
- comment.id !== commentId
-
- )
-
-
+  comment =>
+   comment.id !== commentId
+ ),
 
 };
-
-
 
 
 
 setInteraction(updated);
 
 
-
 return updated;
 
 
-
-},[
-currentUser,
-interaction
-]);
-
-
-
+},
+[
+ currentUser,
+ interaction,
+]
+);
 
 
 
@@ -562,31 +573,20 @@ interaction
 
 
 return {
+  interaction,
 
+  isLoading,
 
- interaction,
+  toggleFavorite,
 
+  toggleBookmark,
 
- isLoading,
+  addComment,
 
+  deleteComment,
 
- toggleFavorite,
-
-
- toggleBookmark,
-
-
- addComment,
-
-
- deleteComment,
-
-
- refetch:
- loadInteraction,
-
-
-
+  refetch:
+    loadInteraction,
 };
 
 

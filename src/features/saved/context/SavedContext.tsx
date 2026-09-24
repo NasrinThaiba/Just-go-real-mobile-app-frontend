@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {
   createContext,
   ReactNode,
@@ -9,220 +8,586 @@ import React, {
   useState,
 } from 'react';
 
-import type { FeedItem } from '@/features/news/types/news.types';
 
-const STORAGE_KEY =
-  '@just-go-real/saved-content';
+import type {
+  FeedItem,
+  PostStatus,
+} from '@/features/news/types/news.types';
+
+
+import {
+  SavedApi,
+} from '@/features/saved/api/saved.api';
+
+
+import {
+  getAccessToken,
+} from '@/features/auth/storage/auth.storage';
+
+
 
 type SavedContentContextValue = {
+
   savedItems: FeedItem[];
+
   savedNews: FeedItem[];
+
   savedVideos: FeedItem[];
-  isLoading: boolean;
-  isSaved: (id: string) => boolean;
-  toggleSaved: (
-    item: FeedItem,
-  ) => Promise<void>;
-  removeSaved: (
-    id: string,
-  ) => Promise<void>;
+
+  isLoading:boolean;
+
+
+  isSaved:(id:string)=>boolean;
+
+
+  toggleSaved:(
+    item:FeedItem
+  )=>Promise<void>;
+
+
+  removeSaved:(
+    id:string
+  )=>Promise<void>;
+
 };
+
+
 
 const SavedContentContext =
-  createContext<
-    SavedContentContextValue | undefined
-  >(undefined);
+createContext<
+SavedContentContextValue | undefined
+>(undefined);
+
+
+
+
 
 type SavedContentProviderProps = {
-  children: ReactNode;
+
+ children:ReactNode;
+
 };
 
+
+
+
+
+
+
 export function SavedContentProvider({
-  children,
-}: SavedContentProviderProps) {
-  const [
-    savedItems,
-    setSavedItems,
-  ] = useState<FeedItem[]>([]);
 
-  const [isLoading, setIsLoading] =
-    useState(true);
+ children,
 
-  useEffect(() => {
-    const loadSavedItems = async () => {
-      try {
-        const storedItems =
-          await AsyncStorage.getItem(
-            STORAGE_KEY,
-          );
+}:SavedContentProviderProps){
 
-        if (!storedItems) {
-          return;
-        }
 
-        const parsedItems: unknown =
-          JSON.parse(storedItems);
 
-        if (Array.isArray(parsedItems)) {
-          setSavedItems(
-            parsedItems as FeedItem[],
-          );
-        }
-      } catch (error) {
-        console.error(
-          'Failed to load saved items:',
-          error,
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
+const [
+ savedItems,
+ setSavedItems
+]=useState<FeedItem[]>([]);
 
-    void loadSavedItems();
-  }, []);
 
-  const saveItemsToStorage =
-    useCallback(
-      async (
-        items: FeedItem[],
-      ) => {
-        try {
-          await AsyncStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(items),
-          );
-        } catch (error) {
-          console.error(
-            'Failed to persist saved items:',
-            error,
-          );
-        }
-      },
-      [],
-    );
 
-  const isSaved = useCallback(
-    (id: string) =>
-      savedItems.some(
-        (item) => item.id === id,
-      ),
-    [savedItems],
-  );
 
-  const toggleSaved = useCallback(
-    async (item: FeedItem) => {
-      setSavedItems(
-        (currentItems) => {
-          const alreadySaved =
-            currentItems.some(
-              (savedItem) =>
-                savedItem.id ===
-                item.id,
-            );
+const [
+ isLoading,
+ setIsLoading
+]=useState(true);
 
-          const nextItems =
-            alreadySaved
-              ? currentItems.filter(
-                  (savedItem) =>
-                    savedItem.id !==
-                    item.id,
-                )
-              : [
-                  item,
-                  ...currentItems,
-                ];
 
-          void saveItemsToStorage(
-            nextItems,
-          );
 
-          return nextItems;
-        },
-      );
-    },
-    [saveItemsToStorage],
-  );
 
-  const removeSaved = useCallback(
-    async (id: string) => {
-      setSavedItems(
-        (currentItems) => {
-          const nextItems =
-            currentItems.filter(
-              (item) =>
-                item.id !== id,
-            );
 
-          void saveItemsToStorage(
-            nextItems,
-          );
 
-          return nextItems;
-        },
-      );
-    },
-    [saveItemsToStorage],
-  );
 
-  const savedNews = useMemo(
-    () =>
-      savedItems.filter(
-        (item) =>
-          item.type === 'news',
-      ),
-    [savedItems],
-  );
+// =========================
+// LOAD SAVED CONTENT
+// =========================
 
-  const savedVideos = useMemo(
-    () =>
-      savedItems.filter(
-        (item) =>
-          item.type === 'video',
-      ),
-    [savedItems],
-  );
 
-  const value =
-    useMemo<SavedContentContextValue>(
-      () => ({
-        savedItems,
-        savedNews,
-        savedVideos,
-        isLoading,
-        isSaved,
-        toggleSaved,
-        removeSaved,
-      }),
-      [
-        savedItems,
-        savedNews,
-        savedVideos,
-        isLoading,
-        isSaved,
-        toggleSaved,
-        removeSaved,
-      ],
-    );
+const loadSaved =
+useCallback(async()=>{
 
-  return (
-    <SavedContentContext.Provider
-      value={value}
-    >
-      {children}
-    </SavedContentContext.Provider>
-  );
+
+try{
+
+
+setIsLoading(true);
+
+
+
+const token =
+await getAccessToken();
+
+
+
+if(!token){
+
+ setSavedItems([]);
+
+ return;
+
 }
 
-export function useSavedContent() {
-  const context = useContext(
-    SavedContentContext,
-  );
 
-  if (!context) {
-    throw new Error(
-      'useSavedContent must be used inside SavedContentProvider',
-    );
-  }
 
-  return context;
+
+const response =
+await SavedApi.getSaved(
+ token
+);
+
+
+
+const mappedItems: FeedItem[] =
+response.data.items.map(
+(item) => ({
+
+  id: item.id,
+
+  type:
+    item.type.toLowerCase() as 'news' | 'video',
+
+
+  title:
+    item.title,
+
+
+  description:
+    item.description ?? '',
+
+
+  thumbnailUrl:
+    item.thumbnailUrl ?? '',
+
+
+  mediaUrl:
+    item.mediaUrl ?? '',
+
+
+  category:
+    item.category ?? '',
+
+
+  location:
+    item.location ?? '',
+
+
+  language:
+    (item.language?.toLowerCase() as 'en' | 'ta') ?? 'en',
+
+
+  views:
+    item.views ?? 0,
+
+
+  likes:
+    item.likes ?? 0,
+
+
+  status:
+    (item.status?.toLowerCase() as PostStatus) ?? 'published',
+
+
+  author:
+    item.author?.name ?? 'Unknown',
+
+
+  createdAt:
+    item.createdAt,
+
+
+  publishedAt:
+    item.publishedAt ?? undefined,
+
+
+})
+);
+
+
+
+setSavedItems(
+ mappedItems
+);
+
+
+
+}
+catch(error){
+
+
+console.error(
+"Failed loading saved content",
+error
+);
+
+
+
+}
+finally{
+
+setIsLoading(false);
+
+}
+
+
+},[]);
+
+
+
+
+
+
+
+useEffect(()=>{
+
+void loadSaved();
+
+},[
+loadSaved
+]);
+
+
+
+
+
+
+
+
+
+// =========================
+// CHECK SAVED
+// =========================
+
+
+const isSaved =
+useCallback(
+(id:string)=>{
+
+
+return savedItems.some(
+ item =>
+ item.id === id
+);
+
+
+},
+[
+savedItems
+]
+);
+
+
+
+
+
+
+
+
+
+
+// =========================
+// TOGGLE SAVE
+// =========================
+
+
+const toggleSaved =
+useCallback(async(
+
+ item:FeedItem
+
+)=>{
+
+
+const token =
+await getAccessToken();
+
+
+
+if(!token){
+
+throw new Error(
+"Please login"
+);
+
+}
+
+
+
+
+const alreadySaved =
+isSaved(
+ item.id
+);
+
+
+
+
+
+if(alreadySaved){
+
+
+await SavedApi.remove(
+
+ item.id,
+
+ token
+
+);
+
+
+
+setSavedItems(
+current=>
+current.filter(
+saved=>
+saved.id !== item.id
+)
+);
+
+
+
+}
+else{
+
+
+await SavedApi.add(
+
+ item.id,
+
+ token
+
+);
+
+
+
+setSavedItems(
+current=>[
+ item,
+ ...current
+]
+);
+
+
+
+}
+
+
+
+},[
+isSaved
+]);
+
+
+
+
+
+
+
+
+
+// =========================
+// REMOVE SAVE
+// =========================
+
+
+const removeSaved =
+useCallback(async(
+
+ id:string
+
+)=>{
+
+
+const token =
+await getAccessToken();
+
+
+
+if(!token){
+
+return;
+
+}
+
+
+
+await SavedApi.remove(
+
+ id,
+
+ token
+
+);
+
+
+
+setSavedItems(
+current=>
+current.filter(
+item=>
+item.id !== id
+)
+);
+
+
+
+},[]);
+
+
+
+
+
+
+
+
+
+
+// =========================
+// FILTERS
+// =========================
+
+
+const savedNews =
+useMemo(()=>{
+
+
+return savedItems.filter(
+
+item=>
+item.type === 'news'
+
+);
+
+
+},[
+savedItems
+]);
+
+
+
+
+
+const savedVideos =
+useMemo(()=>{
+
+
+return savedItems.filter(
+
+item=>
+item.type === 'video'
+
+);
+
+
+},[
+savedItems
+]);
+
+
+
+
+
+
+
+
+
+const value =
+useMemo<SavedContentContextValue>(
+
+()=>({
+
+ savedItems,
+
+ savedNews,
+
+ savedVideos,
+
+ isLoading,
+
+ isSaved,
+
+ toggleSaved,
+
+ removeSaved,
+
+
+}),
+
+[
+
+ savedItems,
+
+ savedNews,
+
+ savedVideos,
+
+ isLoading,
+
+ isSaved,
+
+ toggleSaved,
+
+ removeSaved,
+
+]
+
+
+);
+
+
+
+
+
+
+
+return (
+
+<SavedContentContext.Provider
+
+value={value}
+
+>
+
+{children}
+
+</SavedContentContext.Provider>
+
+);
+
+
+}
+
+
+
+
+
+
+
+
+
+export function useSavedContent(){
+
+
+const context =
+useContext(
+SavedContentContext
+);
+
+
+
+if(!context){
+
+throw new Error(
+'useSavedContent must be used inside SavedContentProvider'
+);
+
+}
+
+
+
+return context;
+
+
 }

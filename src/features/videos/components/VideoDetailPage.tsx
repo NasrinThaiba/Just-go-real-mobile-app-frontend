@@ -30,7 +30,7 @@ import { LoadingView } from '@/components/ui/LoadingView';
 
 import { useCurrentInteractionUser } from '@/features/auth/hooks/useCurrentInteractionUser';
 import { useContentInteractions } from '@/features/interactions/hooks/useContentInteractions';
-import { useNewsDetails } from '@/features/news/hooks/useNewsDetails';
+import { useVideoDetails } from '@/features/videos/hooks/useVideoDetails';
 import type { FeedItem } from '@/features/news/types/news.types';
 import { formatRelativeDate } from '@/utils/formatDate';
 
@@ -137,7 +137,7 @@ export default function VideoDetailsScreen() {
   const { i18n } = useTranslation();
   const { id } = useLocalSearchParams<{id?: string}>();
   const videoId = typeof id === 'string' ? id : '';
-  const { item, isLoading, error } = useNewsDetails(videoId);
+  const { item, isLoading, error } = useVideoDetails(videoId);
   const appLanguage: 'en' | 'ta' =
     i18n.resolvedLanguage === 'ta'
       ? 'ta'
