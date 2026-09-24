@@ -65,6 +65,10 @@ import type {
   FeedItem,
 } from '@/features/news/types/news.types';
 
+import {
+  approveAdminPost,
+} from '@/features/admin/api/admin.api';
+
 
 
 
@@ -231,15 +235,7 @@ export function PostDashboard(){
         try{
 
 
-          await postsApi.updatePost(
-            item.id,
-            {
-              status:
-                'published',
-            },
-          );
-
-
+          await approveAdminPost(item.id);
 
           await refetch();
 

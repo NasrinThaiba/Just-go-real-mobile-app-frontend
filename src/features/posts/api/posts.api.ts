@@ -26,7 +26,13 @@ export const postsApi = {
       );
 
 
-    return response.data.data;
+    console.log(
+      "MY POSTS RESPONSE:",
+      JSON.stringify(response.data,null,2),
+    );
+
+
+    return response.data.data.items;
 
   },
 
@@ -47,7 +53,7 @@ export const postsApi = {
       );
 
 
-    return response.data.data;
+    return response.data.data.item;
 
   },
 
@@ -70,7 +76,7 @@ export const postsApi = {
       );
 
 
-    return response.data.data;
+    return response.data.data.item;
 
   },
 
@@ -91,7 +97,7 @@ export const postsApi = {
       );
 
 
-    return response.data.data;
+    return response.data.data.item;
 
   },
 
@@ -111,6 +117,8 @@ export const postsApi = {
     );
 
   },
+
+  
 
 
 };

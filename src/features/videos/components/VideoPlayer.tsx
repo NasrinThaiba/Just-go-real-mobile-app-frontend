@@ -1,102 +1,139 @@
 import { View } from 'react-native';
+import { useState } from 'react';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
+
+// types
 type VideoPlayerProps = {
-  mediaUrl: string;
-  videoSource?: 'direct' | 'youtube';
-  youtubeVideoId?: string;
-  height?: number;
-  autoPlay?: boolean;
+  mediaUrl:string;
+  videoSource?:'direct' | 'youtube';
+  youtubeVideoId?:string;
+  height?:number;
+  autoPlay?:boolean;
 };
 
-function extractYouTubeVideoId(value?: string): string | null {
-  if (!value) return null;
 
-  const trimmed = value.trim();
-
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
-    return trimmed;
-  }
-
-  const match = trimmed.match(
-    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-  );
-
-  return match?.[1] ?? null;
+// extract function
+function extractYouTubeVideoId(value?:string){
+   // updated regex here
 }
 
+
+// Direct video component
 function DirectVideoPlayer({
-  uri,
-  height,
-  autoPlay,
-}: {
-  uri: string;
-  height: number;
-  autoPlay: boolean;
-}) {
-  const player = useVideoPlayer(uri, (videoPlayer) => {
-    videoPlayer.loop = false;
+ uri,
+ height,
+ autoPlay
+}:{
+ uri:string;
+ height:number;
+ autoPlay:boolean;
+}){
 
-    if (autoPlay) {
-      videoPlayer.play();
-    }
-  });
+ const player = useVideoPlayer(uri,(player)=>{
+   player.loop=false;
 
-  return (
-    <VideoView
-      player={player}
-      nativeControls
-      contentFit="contain"
-      style={{
-        width: '100%',
-        height,
-        backgroundColor: '#000000',
-      }}
-    />
-  );
+   if(autoPlay){
+     player.play();
+   }
+ });
+
+
+ return(
+   <VideoView
+     player={player}
+     nativeControls
+     style={{
+       width:'100%',
+       height,
+       backgroundColor:'#000'
+     }}
+   />
+ );
 }
 
+
+
+// YOUR UPDATED COMPONENT HERE
 export function VideoPlayer({
-  mediaUrl,
-  videoSource = 'direct',
-  youtubeVideoId,
-  height = 300,
-  autoPlay = false,
-}: VideoPlayerProps) {
-  const resolvedYouTubeVideoId =
-    youtubeVideoId ?? extractYouTubeVideoId(mediaUrl);
 
-  const isYouTubeVideo =
-    videoSource === 'youtube' ||
-    Boolean(resolvedYouTubeVideoId);
+ mediaUrl,
+ videoSource='direct',
+ youtubeVideoId,
+ height=300,
+ autoPlay=false
 
-  if (isYouTubeVideo && resolvedYouTubeVideoId) {
-    return (
-      <View
-        style={{
-          width: '100%',
-          height,
-          backgroundColor: '#000000',
+}:VideoPlayerProps){
+
+
+ const [youtubeReady,setYoutubeReady]=useState(false);
+
+
+ const resolvedYouTubeVideoId =
+   youtubeVideoId ?? extractYouTubeVideoId(mediaUrl);
+
+
+
+ const isYouTubeVideo =
+   videoSource === 'youtube' ||
+   Boolean(resolvedYouTubeVideoId);
+
+
+
+ if(isYouTubeVideo && resolvedYouTubeVideoId){
+
+   return(
+     <View
+       style={{
+        width:'100%',
+        height,
+        backgroundColor:'#000'
+       }}
+     >
+
+       <YoutubePlayer
+        height={height}
+        videoId={resolvedYouTubeVideoId}
+
+        play={false}
+
+        onReady={()=>{
+          console.log("Youtube ready");
         }}
-      >
-        <YoutubePlayer
-          height={height}
-          videoId={resolvedYouTubeVideoId}
-          play={autoPlay}
-          webViewStyle={{
-            backgroundColor: '#000000',
-          }}
-        />
-      </View>
-    );
-  }
 
-  return (
-    <DirectVideoPlayer
-      uri={mediaUrl}
-      height={height}
-      autoPlay={autoPlay}
-    />
-  );
+        webViewProps={{
+          allowsInlineMediaPlayback:true,
+          javaScriptEnabled:true,
+          domStorageEnabled:true,
+          originWhitelist:[
+            '*'
+          ],
+        }}
+
+        webViewStyle={{
+          backgroundColor:"#000"
+        }}
+
+        initialPlayerParams={{
+          controls:true,
+          modestbranding:true,
+          rel:false,
+        }}
+      />
+
+     </View>
+   );
+
+ }
+
+
+ return(
+   <DirectVideoPlayer
+     uri={mediaUrl}
+     height={height}
+     autoPlay={autoPlay}
+   />
+ );
+
 }

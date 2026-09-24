@@ -19,6 +19,8 @@ import type {
   NewsType,
 } from "../types/news.types";
 
+import * as ImagePicker from "expo-image-picker";
+
 
 
 const CATEGORIES = [
@@ -189,7 +191,40 @@ onNext,
 }:Props){
 
 
+const pickImage = async () => {
 
+  const permission =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+
+  if(!permission.granted){
+    alert("Permission required");
+    return;
+  }
+
+
+  const result =
+    await ImagePicker.launchImageLibraryAsync({
+
+      mediaTypes:
+        ImagePicker.MediaTypeOptions.Images,
+
+      quality:0.8,
+
+    });
+
+
+  if(!result.canceled){
+
+    const imageUri =
+      result.assets[0].uri;
+
+
+    setMediaUrl(imageUri);
+
+  }
+
+};
 
 
 return (
@@ -708,6 +743,8 @@ Featured Image *
 
 
 <Pressable
+  
+onPress={pickImage}
 
 className="h-44 items-center justify-center rounded-3xl border-2 border-dashed border-slate-300"
 

@@ -121,6 +121,8 @@ export async function approveAdminPost(
       `/admin/posts/${id}/approve`,
       {
         method:'PATCH',
+
+        body:{},
       },
     );
 
