@@ -37,7 +37,6 @@ import {
 
 import type {
   CreateVideoPayload,
-  VideoCategory,
   VideoLanguage,
   VideoType,
 } from '../types/video.types';
@@ -76,7 +75,20 @@ type Step =
 export default function CreateVideoScreen(){
 
 
+function extractYoutubeId(url:string){
 
+
+const regex =
+/(?:youtube\.com\/watch\?v=|youtu.be\/)([^&?/]+)/;
+
+
+const match =
+url.match(regex);
+
+
+return match?.[1];
+
+}
 
 
 const params =
@@ -172,11 +184,8 @@ useState<VideoType>(
 
 
 const [category,setCategory] =
-
-useState<VideoCategory>(
-
- 'other'
-
+useState<string>(
+  'other'
 );
 
 
@@ -360,129 +369,119 @@ videoId
 // SAVE VIDEO
 // ======================
 
-
 async function saveVideo(){
+
 
 try{
 
 
-  setLoading(true);
+setLoading(true);
 
 
 
-  const payload: CreateVideoPayload =
-  {
-
-    title:
-      title.trim(),
-
-
-    description:
-      description.trim(),
-
-
-    videoUrl,
-
-
-    thumbnailUrl,
-
-
-    videoType,
-
-
-    category,
-
-
-    language,
-
-
-    status:
-      'pending',
-
-
-  };
+const isYoutube =
+videoUrl.startsWith("http");
 
 
 
+const payload:CreateVideoPayload = {
 
+title:title.trim(),
 
-  if(
-    isEdit &&
-    videoId
-  ){
+description:description.trim(),
 
+videoType,
 
-    await updateVideo(
+videoSource:
+isYoutube
+? 'youtube'
+: 'direct',
 
-      videoId,
+mediaUrl:
+!isYoutube
+? videoUrl
+: undefined,
 
-      payload,
+youtubeVideoId:
+isYoutube
+? extractYoutubeId(videoUrl)
+: undefined,
 
-    );
+thumbnailUrl,
 
+category,
 
-  }
-  else{
+language,
 
+status:"pending",
 
-    await createVideo(
-
-      payload,
-
-    );
-
-
-  }
-
-
-
-
-
-  Alert.alert(
-
-    'Success',
-
-    'Video submitted successfully',
-
-  );
+};
 
 
 
+console.log(
+"VIDEO PAYLOAD",
+payload
+);
 
-  router.replace(
-    '/video'
-  );
+
+
+if(videoId){
+
+await updateVideo(
+videoId,
+payload
+);
+
+}
+else{
+
+
+await createVideo(
+payload
+);
+
+
+}
+
+
+
+Alert.alert(
+"Success",
+"Video submitted successfully"
+);
+
+
+
+router.replace("/video");
 
 
 
 }
-catch(error){
+
+catch(error:any){
 
 
-  console.log(
-
-    'SAVE VIDEO ERROR',
-
-    error,
-
-  );
+console.log(
+"SAVE VIDEO ERROR",
+error.response?.data
+);
 
 
-
-  Alert.alert(
-
-    'Error',
-
-    'Unable to submit video',
-
-  );
+Alert.alert(
+"Error",
+JSON.stringify(
+error.response?.data
+)
+);
 
 
 }
+
 finally{
 
 
-  setLoading(false);
+setLoading(false);
 
 
 }
@@ -563,70 +562,41 @@ step === 'content'
 
 <CreateVideoContent
 
-
 title={title}
-
 setTitle={setTitle}
 
 
-
 description={description}
-
 setDescription={setDescription}
 
 
-
 videoType={videoType}
-
 setVideoType={setVideoType}
 
 
-
 category={category}
-
 setCategory={setCategory}
 
 
-
 language={language}
-
 setLanguage={setLanguage}
 
 
-
 videoUrl={videoUrl}
-
 setVideoUrl={setVideoUrl}
 
 
+youtubeUrl={youtubeUrl}
+setYoutubeUrl={setYoutubeUrl}
+
 
 thumbnailUrl={thumbnailUrl}
-
 setThumbnailUrl={setThumbnailUrl}
-
 
 
 onNext={()=>setStep('preview')}
 
-
 />
-
-
-)
-
-}
-
-
-
-
-
-
-
-
-
-{
-
-step === 'preview'
 
 &&
 

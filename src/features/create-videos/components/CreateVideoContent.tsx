@@ -1,69 +1,78 @@
 import {
-  Image,
   Pressable,
   Text,
   TextInput,
   View,
 } from "react-native";
 
-
 import {
   Ionicons,
 } from "@expo/vector-icons";
 
+import * as ImagePicker from "expo-image-picker";
+
 
 import type {
-  VideoCategory,
-  VideoLanguage,
   VideoType,
+  VideoLanguage,
 } from "../types/video.types";
 
 
 
-
-
 const CATEGORIES = [
-
-"politics",
-"business",
-"sports",
-"cinema",
-"technology",
-"science",
-"world",
-"education",
-"entertainment",
-"other",
-
+  "politics",
+  "business",
+  "sports",
+  "cinema",
+  "technology",
+  "science",
+  "world",
+  "education",
+  "entertainment",
+  "other",
 ] as const;
-
-
 
 
 
 const VIDEO_TYPES = [
 
 {
- label:"Normal",
- value:"normal",
- icon:"videocam-outline",
+  label:"News",
+  value:"news",
+  icon:"newspaper-outline",
 },
 
 {
- label:"Short",
- value:"short",
- icon:"flash-outline",
+  label:"Breaking",
+  value:"breaking",
+  icon:"flash-outline",
 },
 
 {
- label:"Live",
- value:"live",
- icon:"radio-outline",
+  label:"Live",
+  value:"live",
+  icon:"radio-outline",
+},
+
+{
+  label:"Interview",
+  value:"interview",
+  icon:"person-outline",
+},
+
+{
+  label:"Short",
+  value:"short",
+  icon:"phone-portrait-outline",
+},
+
+{
+  label:"Featured",
+  value:"featured",
+  icon:"star-outline",
 },
 
 ];
-
-
 
 
 
@@ -84,52 +93,38 @@ const LANGUAGES = [
 
 
 
-
-
-
 type Props = {
 
-
 title:string;
-
 setTitle:(v:string)=>void;
 
 
-
 description:string;
-
 setDescription:(v:string)=>void;
 
 
-
 videoType:VideoType;
-
 setVideoType:(v:VideoType)=>void;
 
 
-
-category:VideoCategory;
-
-setCategory:(v:VideoCategory)=>void;
-
-
-
 language:VideoLanguage;
-
 setLanguage:(v:VideoLanguage)=>void;
 
 
-
 videoUrl:string;
-
 setVideoUrl:(v:string)=>void;
 
 
+youtubeUrl:string;
+setYoutubeUrl:(v:string)=>void;
+
 
 thumbnailUrl:string;
-
 setThumbnailUrl:(v:string)=>void;
 
+
+category:string;
+setCategory:(v:string)=>void;
 
 
 onNext:()=>void;
@@ -140,52 +135,65 @@ onNext:()=>void;
 
 
 
-
-
-
-
 export default function CreateVideoContent({
 
 title,
-
 setTitle,
 
-
 description,
-
 setDescription,
 
-
 videoType,
-
 setVideoType,
 
-
-category,
-
-setCategory,
-
-
 language,
-
 setLanguage,
 
-
 videoUrl,
-
 setVideoUrl,
 
+youtubeUrl,
+setYoutubeUrl,
 
 thumbnailUrl,
-
 setThumbnailUrl,
 
+category,
+setCategory,
 
 onNext,
 
-
 }:Props){
 
+
+
+const pickVideo = async()=>{
+
+
+const result =
+await ImagePicker.launchImageLibraryAsync({
+
+mediaTypes:
+ ImagePicker.MediaTypeOptions.Videos,
+
+allowsEditing:true,
+
+quality:1,
+
+});
+
+
+
+if(!result.canceled){
+
+setVideoUrl(
+ result.assets[0].uri
+);
+
+
+}
+
+};
 
 
 
@@ -195,222 +203,26 @@ return (
 <View>
 
 
-
-
-
-{/* HEADER */}
-
-
-<View
-
-className="mb-6"
-
->
-
-
-<Text
-
-className="text-3xl font-black text-slate-900"
-
->
-
+<Text className="mb-6 text-3xl font-black text-slate-900">
 Create Video
-
 </Text>
 
 
 
-<Text
+<View className="rounded-3xl bg-white p-5">
 
-className="mt-2 text-sm text-slate-500"
 
->
-
-Upload videos and share latest updates
-
-</Text>
-
-
-</View>
-
-
-
-
-
-
-
-
-
-{/* STEP */}
-
-
-<View
-
-className="mb-6 rounded-3xl bg-white p-5"
-
->
-
-
-<View
-
-className="flex-row justify-between"
-
->
-
-
-{
-
-[
-"Content",
-"Preview",
-"Publish"
-]
-.map(
-(item,index)=>(
-
-
-<View
-
-key={item}
-
-className="items-center"
-
->
-
-
-<View
-
-className={`
-h-10
-w-10
-items-center
-justify-center
-rounded-full
-
-${
-index===0
-?
-"bg-orange-500"
-:
-"bg-slate-200"
-}
-
-`}
-
->
-
-
-<Text
-
-className={`
-font-black
-
-${
-index===0
-?
-"text-white"
-:
-"text-slate-500"
-}
-
-`}
-
->
-
-{index+1}
-
-</Text>
-
-
-</View>
-
-
-
-<Text
-
-className="mt-2 text-xs font-bold text-slate-500"
-
->
-
-{item}
-
-</Text>
-
-
-
-</View>
-
-
-)
-
-)
-
-
-}
-
-
-</View>
-
-
-</View>
-
-
-
-
-
-
-
-
-
-{/* BASIC INFORMATION */}
-
-
-
-<View
-
-className="rounded-3xl bg-white p-5"
-
->
-
-
-<Text
-
-className="text-xl font-black text-slate-900"
-
->
-
+<Text className="text-xl font-black text-slate-900">
 Video Information
-
 </Text>
-
-
-
-
-
 
 
 
 {/* TITLE */}
 
-
-
-<Text
-
-className="mb-2 mt-5 text-sm font-bold text-slate-700"
-
->
-
+<Text className="mb-2 mt-5 font-bold text-slate-700">
 Video Title *
-
 </Text>
-
-
-
-<View
-
-className="rounded-2xl bg-slate-100 px-4 py-3"
-
->
 
 
 <TextInput
@@ -421,58 +233,79 @@ onChangeText={setTitle}
 
 placeholder="Enter video title"
 
-placeholderTextColor="#94A3B8"
-
-maxLength={150}
-
-className="text-base text-slate-900"
+className="rounded-2xl bg-slate-100 px-4 py-4"
 
 />
 
 
 
-<Text
 
-className="self-end text-xs text-slate-400"
+{/* LOCAL VIDEO */}
+
+
+<Pressable
+
+onPress={pickVideo}
+
+className="
+mt-5
+h-44
+items-center
+justify-center
+rounded-3xl
+border-2
+border-dashed
+border-slate-300
+"
 
 >
 
-{title.length}/150
 
+{
+videoUrl
+?
+
+<Text className="font-bold text-green-600">
+Local Video Selected
+</Text>
+
+:
+
+<>
+
+<Ionicons
+
+name="cloud-upload-outline"
+
+size={45}
+
+color="#94A3B8"
+
+/>
+
+<Text className="mt-3 font-bold text-slate-500">
+Upload Video
+</Text>
+
+</>
+
+}
+
+
+</Pressable>
+
+
+
+
+{/* YOUTUBE */}
+
+<Text className="mb-2 mt-6 font-bold text-slate-700">
+YouTube URL (Optional)
 </Text>
 
 
-</View>
 
-
-
-
-
-
-
-
-
-{/* YOUTUBE URL */}
-
-
-
-<Text
-
-className="mb-2 mt-6 text-sm font-bold text-slate-700"
-
->
-
-YouTube Video URL *
-
-</Text>
-
-
-
-<View
-
-className="flex-row items-center rounded-2xl bg-slate-100 px-4"
-
->
+<View className="flex-row items-center rounded-2xl bg-slate-100 px-4">
 
 
 <Ionicons
@@ -481,7 +314,7 @@ name="logo-youtube"
 
 size={22}
 
-color="#FF0000"
+color="red"
 
 />
 
@@ -489,20 +322,17 @@ color="#FF0000"
 
 <TextInput
 
-value={videoUrl}
+value={youtubeUrl}
 
-onChangeText={setVideoUrl}
+onChangeText={setYoutubeUrl}
 
-placeholder="https://youtube.com/watch?v="
-
-placeholderTextColor="#94A3B8"
+placeholder="Paste YouTube URL"
 
 autoCapitalize="none"
 
-className="ml-3 flex-1 py-4 text-base text-slate-900"
+className="ml-3 flex-1 py-4"
 
 />
-
 
 
 </View>
@@ -511,31 +341,11 @@ className="ml-3 flex-1 py-4 text-base text-slate-900"
 
 
 
+{/* THUMBNAIL */}
 
-
-
-
-{/* THUMBNAIL URL */}
-
-
-
-<Text
-
-className="mb-2 mt-6 text-sm font-bold text-slate-700"
-
->
-
-Thumbnail Image URL
-
+<Text className="mb-2 mt-6 font-bold text-slate-700">
+Thumbnail URL
 </Text>
-
-
-
-<View
-
-className="rounded-2xl bg-slate-100 px-4"
-
->
 
 
 <TextInput
@@ -544,19 +354,11 @@ value={thumbnailUrl}
 
 onChangeText={setThumbnailUrl}
 
-placeholder="Enter thumbnail image URL"
+placeholder="Thumbnail image URL"
 
-placeholderTextColor="#94A3B8"
-
-className="py-4 text-base text-slate-900"
+className="rounded-2xl bg-slate-100 px-4 py-4"
 
 />
-
-
-</View>
-
-
-
 
 
 
@@ -566,37 +368,17 @@ className="py-4 text-base text-slate-900"
 {/* CATEGORY */}
 
 
-
-<Text
-
-className="mb-3 mt-6 text-sm font-bold text-slate-700"
-
->
-
-Category *
-
+<Text className="mb-3 mt-6 font-bold text-slate-700">
+Category
 </Text>
 
 
-
-
-<View
-
-className="flex-row flex-wrap gap-3"
-
->
+<View className="flex-row flex-wrap gap-3">
 
 
 {
-CATEGORIES.map(item=>{
+CATEGORIES.map(item=>(
 
-
-const active =
-category===item;
-
-
-
-return (
 
 <Pressable
 
@@ -607,18 +389,13 @@ setCategory(item)
 }
 
 className={`
-
-w-[31%]
-
+w-[30%]
+rounded-full
+py-3
 items-center
 
-rounded-full
-
-py-3
-
-
 ${
-active
+category===item
 ?
 "bg-orange-500"
 :
@@ -632,22 +409,18 @@ active
 
 <Text
 
-className={`
+className={
 
-text-sm
+category===item
 
-font-bold
-
-
-${
-active
 ?
-"text-white"
-:
-"text-slate-700"
-}
+"text-white font-bold"
 
-`}
+:
+
+"text-slate-700 font-bold"
+
+}
 
 >
 
@@ -658,9 +431,8 @@ active
 
 </Pressable>
 
-)
 
-})
+))
 
 }
 
@@ -672,42 +444,20 @@ active
 
 
 
-
-
-
 {/* VIDEO TYPE */}
 
 
-
-<Text
-
-className="mb-3 mt-6 text-sm font-bold text-slate-700"
-
->
-
-Video Type *
-
+<Text className="mb-3 mt-6 font-bold text-slate-700">
+Video Type
 </Text>
 
 
-
-<View
-
-className="flex-row flex-wrap gap-3"
-
->
+<View className="flex-row flex-wrap gap-3">
 
 
 {
-VIDEO_TYPES.map(item=>{
+VIDEO_TYPES.map(item=>(
 
-
-const active =
-videoType===item.value;
-
-
-
-return (
 
 <Pressable
 
@@ -715,27 +465,26 @@ key={item.value}
 
 onPress={()=>
 setVideoType(
-item.value as VideoType
+ item.value as VideoType
 )
 }
 
 className={`
-
 w-[48%]
-
 rounded-3xl
-
-border
-
 p-4
 
-
 ${
-active
+videoType===item.value
+
 ?
-"border-orange-500 bg-orange-50"
+
+"bg-orange-50 border border-orange-500"
+
 :
-"border-slate-200 bg-white"
+
+"bg-white border border-slate-200"
+
 }
 
 `}
@@ -749,43 +498,25 @@ name={item.icon as any}
 
 size={25}
 
-color={
-active
-?
-"#F97316"
-:
-"#64748B"
-}
+color="#F97316"
 
 />
 
 
-
-<Text
-
-className="mt-3 font-black text-slate-800"
-
->
-
+<Text className="mt-2 font-black">
 {item.label}
-
 </Text>
 
 
 </Pressable>
 
 
-)
-
-})
+))
 
 }
 
 
 </View>
-
-
-
 
 
 
@@ -795,24 +526,9 @@ className="mt-3 font-black text-slate-800"
 {/* DESCRIPTION */}
 
 
-
-<Text
-
-className="mb-2 mt-6 text-sm font-bold text-slate-700"
-
->
-
-Description *
-
+<Text className="mb-2 mt-6 font-bold text-slate-700">
+Description
 </Text>
-
-
-
-<View
-
-className="min-h-[130px] rounded-2xl bg-slate-100 p-4"
-
->
 
 
 <TextInput
@@ -821,24 +537,18 @@ value={description}
 
 onChangeText={setDescription}
 
-placeholder="Write video description"
-
-placeholderTextColor="#94A3B8"
-
 multiline
 
-textAlignVertical="top"
+placeholder="Write description"
 
-className="text-base text-slate-900"
+className="
+h-32
+rounded-2xl
+bg-slate-100
+p-4
+"
 
 />
-
-
-</View>
-
-
-
-
 
 
 
@@ -847,25 +557,12 @@ className="text-base text-slate-900"
 {/* LANGUAGE */}
 
 
-
-<Text
-
-className="mb-2 mt-6 text-sm font-bold text-slate-700"
-
->
-
-Language *
-
+<Text className="mb-3 mt-6 font-bold text-slate-700">
+Language
 </Text>
 
 
-
-
-<View
-
-className="flex-row gap-3"
-
->
+<View className="flex-row gap-3">
 
 
 {
@@ -878,30 +575,19 @@ key={item.value}
 
 onPress={()=>
 setLanguage(
-item.value as VideoLanguage
+ item.value as VideoLanguage
 )
 }
 
 className={`
-
-rounded-xl
-
-px-6
-
-py-3
-
+rounded-xl px-6 py-3
 
 ${
 language===item.value
-
 ?
-
 "bg-orange-500"
-
 :
-
 "bg-slate-100"
-
 }
 
 `}
@@ -909,23 +595,18 @@ language===item.value
 >
 
 
-<Text
-
-className={
+<Text className={
 
 language===item.value
 
 ?
-
 "text-white font-bold"
 
 :
 
 "text-slate-700 font-bold"
 
-}
-
->
+}>
 
 {item.label}
 
@@ -947,30 +628,17 @@ language===item.value
 
 
 
-
-
-
-{/* NEXT */}
-
-
-
 <Pressable
 
 onPress={onNext}
 
-className="mt-8 items-center rounded-2xl bg-orange-500 py-4"
+className="mt-8 rounded-2xl bg-orange-500 py-4 items-center"
 
 >
 
 
-<Text
-
-className="font-black text-white"
-
->
-
-Continue to Preview
-
+<Text className="font-black text-white">
+Continue
 </Text>
 
 
@@ -978,17 +646,12 @@ Continue to Preview
 
 
 
-
-
-
 </View>
-
-
-
 
 
 </View>
 
 );
+
 
 }
