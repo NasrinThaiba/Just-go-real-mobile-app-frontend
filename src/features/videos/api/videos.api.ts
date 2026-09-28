@@ -5,6 +5,7 @@ import type {
   CreateVideoInput,
   UpdateVideoInput,
 } from '@/features/videos/types/videos.types';
+import { apiClient } from '@/shared/api/axiosInstance';
 
 
 type VideoListResponse = {
@@ -23,7 +24,6 @@ type VideoResponse = {
     item?: VideoItem;
   };
 };
-
 
 
 function normalizeVideo(
@@ -48,19 +48,26 @@ function normalizeVideo(
     status:
       item.status?.toLowerCase(),
 
+    // IMPORTANT
+    views:
+      Number(item.views ?? 0),
+
+    likes:
+      Number(item.likes ?? 0),
+
   };
 
 }
 
 
-
-
-
 export const videosApi = {
 
 
-  async getVideos(): Promise<VideoItem[]> {
+  // =================================================
+  // GET ALL VIDEOS
+  // =================================================
 
+  async getVideos(): Promise<VideoItem[]> {
 
     const response =
       await fetch(
@@ -90,10 +97,40 @@ export const videosApi = {
   },
 
 
+  // =================================================
+  // GET MY VIDEOS
+  // =================================================
+
+  async getMyVideos(): Promise<VideoItem[]> {
+
+  const response =
+    await apiClient.get<VideoListResponse>(
+      '/videos/me',
+    );
 
 
+  console.log(
+    'MY VIDEOS RESPONSE:',
+    JSON.stringify(
+      response.data,
+      null,
+      2,
+    ),
+  );
 
-  // 🔥 Breaking videos for carousel
+
+  return (
+    response.data.data?.items?.map(
+      normalizeVideo,
+    ) ?? []
+  );
+
+},
+
+
+  // =================================================
+  // GET BREAKING VIDEOS
+  // =================================================
 
   async getBreakingVideos(
     params: {
@@ -103,12 +140,11 @@ export const videosApi = {
     } = {},
   ): Promise<VideoItem[]> {
 
-
     const query =
       new URLSearchParams();
 
 
-    if(params.language){
+    if (params.language) {
 
       query.append(
         'language',
@@ -134,15 +170,13 @@ export const videosApi = {
     );
 
 
-
     const response =
       await fetch(
         `${API_BASE_URL}/videos/breaking?${query.toString()}`,
       );
 
 
-
-    if(!response.ok){
+    if (!response.ok) {
 
       throw new Error(
         `Failed to fetch breaking videos ${response.status}`,
@@ -151,10 +185,8 @@ export const videosApi = {
     }
 
 
-
     const result =
       await response.json() as VideoListResponse;
-
 
 
     return (
@@ -166,16 +198,15 @@ export const videosApi = {
   },
 
 
-
-
-
+  // =================================================
+  // GET VIDEO BY ID
+  // =================================================
 
   async getVideoById(
     id: string,
   ): Promise<VideoItem | null> {
 
-
-    if(!id){
+    if (!id) {
       return null;
     }
 
@@ -186,13 +217,10 @@ export const videosApi = {
       );
 
 
-    if(!response.ok){
+    if (!response.ok) {
 
-
-      if(response.status === 404){
-
+      if (response.status === 404) {
         return null;
-
       }
 
 
@@ -203,10 +231,8 @@ export const videosApi = {
     }
 
 
-
     const result =
       await response.json() as VideoResponse;
-
 
 
     return result.data?.item
@@ -218,23 +244,22 @@ export const videosApi = {
   },
 
 
-
-
-
+  // =================================================
+  // CREATE VIDEO
+  // =================================================
 
   async createVideo(
     input: CreateVideoInput,
   ): Promise<VideoItem> {
-
 
     const response =
       await fetch(
         `${API_BASE_URL}/videos`,
         {
 
-          method:'POST',
+          method: 'POST',
 
-          headers:{
+          headers: {
             'Content-Type':
               'application/json',
           },
@@ -246,8 +271,7 @@ export const videosApi = {
       );
 
 
-
-    if(!response.ok){
+    if (!response.ok) {
 
       const error =
         await response.text();
@@ -261,20 +285,17 @@ export const videosApi = {
     }
 
 
-
     const result =
       await response.json() as VideoResponse;
 
 
-
-    if(!result.data?.item){
+    if (!result.data?.item) {
 
       throw new Error(
         'Video data missing',
       );
 
     }
-
 
 
     return normalizeVideo(
@@ -284,26 +305,23 @@ export const videosApi = {
   },
 
 
-
-
-
-
+  // =================================================
+  // UPDATE VIDEO
+  // =================================================
 
   async updateVideo(
-    id:string,
-    input:UpdateVideoInput,
-  ):Promise<VideoItem>{
-
-
+    id: string,
+    input: UpdateVideoInput,
+  ): Promise<VideoItem> {
 
     const response =
       await fetch(
         `${API_BASE_URL}/videos/${id}`,
         {
 
-          method:'PATCH',
+          method: 'PATCH',
 
-          headers:{
+          headers: {
             'Content-Type':
               'application/json',
           },
@@ -315,8 +333,7 @@ export const videosApi = {
       );
 
 
-
-    if(!response.ok){
+    if (!response.ok) {
 
       throw new Error(
         `Failed to update video ${response.status}`,
@@ -325,20 +342,17 @@ export const videosApi = {
     }
 
 
-
     const result =
       await response.json() as VideoResponse;
 
 
-
-    if(!result.data?.item){
+    if (!result.data?.item) {
 
       throw new Error(
         'Updated video data missing',
       );
 
     }
-
 
 
     return normalizeVideo(
@@ -348,27 +362,24 @@ export const videosApi = {
   },
 
 
-
-
-
-
+  // =================================================
+  // DELETE VIDEO
+  // =================================================
 
   async deleteVideo(
-    id:string,
-  ):Promise<void>{
-
+    id: string,
+  ): Promise<void> {
 
     const response =
       await fetch(
         `${API_BASE_URL}/videos/${id}`,
         {
-          method:'DELETE',
+          method: 'DELETE',
         },
       );
 
 
-
-    if(!response.ok){
+    if (!response.ok) {
 
       throw new Error(
         `Failed to delete video ${response.status}`,
@@ -377,6 +388,5 @@ export const videosApi = {
     }
 
   },
-
 
 };

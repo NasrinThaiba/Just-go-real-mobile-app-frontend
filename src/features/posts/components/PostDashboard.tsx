@@ -65,6 +65,7 @@ import type {
   FeedItem,
 } from '@/features/news/types/news.types';
 
+
 import {
   approveAdminPost,
 } from '@/features/admin/api/admin.api';
@@ -72,7 +73,7 @@ import {
 
 
 
-export function PostDashboard(){
+export function PostDashboard() {
 
 
   const router = useRouter();
@@ -102,12 +103,11 @@ export function PostDashboard(){
 
 
 
-
   const [
     activeFilter,
     setActiveFilter,
   ] =
-  useState<MyPostFilter>('all');
+    useState<MyPostFilter>('all');
 
 
 
@@ -115,19 +115,22 @@ export function PostDashboard(){
     isRefreshing,
     setIsRefreshing,
   ] =
-  useState(false);
+    useState(false);
 
 
 
 
+  // ============================
+  // REFRESH WHEN SCREEN FOCUSES
+  // ============================
 
   useFocusEffect(
 
-    useCallback(()=>{
+    useCallback(() => {
 
       void refetch();
 
-    },[
+    }, [
       refetch,
     ])
 
@@ -136,66 +139,76 @@ export function PostDashboard(){
 
 
 
+  // ============================
+  // FILTER POSTS
+  // ============================
 
   const filteredItems =
-    useMemo(()=>{
+  useMemo(() => {
+
+    // ALL
+    if (
+      activeFilter === 'all'
+    ) {
+
+      return items;
+
+    }
 
 
-      if(
-        activeFilter === 'all'
-      ){
-
-        return items;
-
-      }
-
-
+    // PUBLISHED
+    if (
+      activeFilter === 'published'
+    ) {
 
       return items.filter(
         item =>
-          item.type === activeFilter,
+          item.status === 'published',
       );
 
-
-    },[
-      activeFilter,
-      items,
-    ]);
+    }
 
 
+    // NEWS / VIDEO
+    return items.filter(
+      item =>
+        item.type === activeFilter,
+    );
+
+  }, [
+    activeFilter,
+    items,
+  ]);
 
 
 
 
+  // ============================
+  // REFRESH
+  // ============================
 
   const refreshPosts =
     useCallback(
-      async()=>{
+      async () => {
 
-        try{
+        try {
 
           setIsRefreshing(true);
 
           await refetch();
 
-
         }
-        finally{
+        finally {
 
           setIsRefreshing(false);
 
         }
-
 
       },
       [
         refetch,
       ],
     );
-
-
-
-
 
 
 
@@ -206,16 +219,16 @@ export function PostDashboard(){
 
   const handlePublish =
     useCallback(
-      async(
-        item:FeedItem,
-      )=>{
+      async (
+        item: FeedItem,
+      ) => {
 
 
-        if(!isAdmin){
+        if (!isAdmin) {
 
           Toast.show({
 
-            type:'error',
+            type: 'error',
 
             text1:
               'Admin access required',
@@ -225,17 +238,19 @@ export function PostDashboard(){
 
           });
 
-
           return;
 
         }
 
 
 
-        try{
+        try {
 
 
-          await approveAdminPost(item.id);
+          await approveAdminPost(
+            item.id,
+          );
+
 
           await refetch();
 
@@ -243,7 +258,7 @@ export function PostDashboard(){
 
           Toast.show({
 
-            type:'success',
+            type: 'success',
 
             text1:
               'Post published',
@@ -252,24 +267,23 @@ export function PostDashboard(){
 
 
         }
-        catch(error){
+        catch (error) {
 
 
           console.log(
-            "PUBLISH ERROR:",
+            'PUBLISH ERROR:',
             error,
           );
 
 
           Toast.show({
 
-            type:'error',
+            type: 'error',
 
             text1:
               'Publish failed',
 
           });
-
 
         }
 
@@ -280,11 +294,6 @@ export function PostDashboard(){
         refetch,
       ],
     );
-
-
-
-
-
 
 
 
@@ -295,12 +304,12 @@ export function PostDashboard(){
 
   const handleUnpublish =
     useCallback(
-      async(
-        item:FeedItem,
-      )=>{
+      async (
+        item: FeedItem,
+      ) => {
 
 
-        if(!isAdmin){
+        if (!isAdmin) {
 
           return;
 
@@ -308,13 +317,12 @@ export function PostDashboard(){
 
 
 
-        try{
+        try {
 
 
           await postsApi.unpublishPost(
             item.id,
           );
-
 
 
           await refetch();
@@ -323,7 +331,7 @@ export function PostDashboard(){
 
           Toast.show({
 
-            type:'success',
+            type: 'success',
 
             text1:
               'Post unpublished',
@@ -331,16 +339,24 @@ export function PostDashboard(){
           });
 
 
-
         }
-        catch(error){
+        catch (error) {
 
 
           console.log(
-            "UNPUBLISH ERROR:",
+            'UNPUBLISH ERROR:',
             error,
           );
 
+
+          Toast.show({
+
+            type: 'error',
+
+            text1:
+              'Unpublish failed',
+
+          });
 
         }
 
@@ -355,28 +371,23 @@ export function PostDashboard(){
 
 
 
-
-
-
   // ============================
   // DELETE
   // ============================
 
-
   const deletePost =
     useCallback(
-      async(
-        item:FeedItem,
-      )=>{
+      async (
+        item: FeedItem,
+      ) => {
 
 
-        try{
+        try {
 
 
           await postsApi.deletePost(
             item.id,
           );
-
 
 
           await refetch();
@@ -385,7 +396,7 @@ export function PostDashboard(){
 
           Toast.show({
 
-            type:'success',
+            type: 'success',
 
             text1:
               'Post deleted',
@@ -393,26 +404,24 @@ export function PostDashboard(){
           });
 
 
-
         }
-        catch(error){
+        catch (error) {
 
 
           console.log(
-            "DELETE ERROR:",
+            'DELETE ERROR:',
             error,
           );
 
 
           Toast.show({
 
-            type:'error',
+            type: 'error',
 
             text1:
               'Delete failed',
 
           });
-
 
         }
 
@@ -426,14 +435,15 @@ export function PostDashboard(){
 
 
 
-
-
+  // ============================
+  // CONFIRM DELETE
+  // ============================
 
   const confirmDelete =
     useCallback(
       (
-        item:FeedItem,
-      )=>{
+        item: FeedItem,
+      ) => {
 
 
         Alert.alert(
@@ -445,20 +455,20 @@ export function PostDashboard(){
           [
 
             {
-              text:'Cancel',
+              text: 'Cancel',
 
-              style:'cancel',
+              style: 'cancel',
 
             },
 
 
             {
 
-              text:'Delete',
+              text: 'Delete',
 
-              style:'destructive',
+              style: 'destructive',
 
-              onPress:()=>{
+              onPress: () => {
 
                 void deletePost(
                   item,
@@ -482,10 +492,9 @@ export function PostDashboard(){
 
 
 
-
-
-
-
+  // ============================
+  // UI
+  // ============================
 
   return (
 
@@ -500,16 +509,36 @@ export function PostDashboard(){
     >
 
 
-      <View className="h-14 flex-row items-center border-b border-borderSoft bg-white px-4">
+      {/* ============================
+          HEADER
+      ============================ */}
+
+      <View
+        className="
+          h-14
+          flex-row
+          items-center
+          border-b
+          border-borderSoft
+          bg-white
+          px-4
+        "
+      >
 
 
         <Pressable
 
-          onPress={()=>
+          onPress={() =>
             router.back()
           }
 
-          className="h-10 w-10 items-center justify-center rounded-full"
+          className="
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-full
+          "
 
         >
 
@@ -527,9 +556,17 @@ export function PostDashboard(){
 
 
 
-        <View className="ml-2 flex-1">
+        <View
+          className="ml-2 flex-1"
+        >
 
-          <Text className="text-xl font-black text-textMain">
+          <Text
+            className="
+              text-xl
+              font-black
+              text-textMain
+            "
+          >
 
             My Posts
 
@@ -542,9 +579,22 @@ export function PostDashboard(){
         {
           isAdmin && (
 
-            <View className="rounded-full bg-indigo-50 px-3 py-1.5">
+            <View
+              className="
+                rounded-full
+                bg-indigo-50
+                px-3
+                py-1.5
+              "
+            >
 
-              <Text className="text-xs font-extrabold text-indigo-700">
+              <Text
+                className="
+                  text-xs
+                  font-extrabold
+                  text-indigo-700
+                "
+              >
 
                 ADMIN
 
@@ -561,11 +611,15 @@ export function PostDashboard(){
 
 
 
+      {/* ============================
+          POSTS LIST
+      ============================ */}
 
       <FlatList
 
-
-        data={filteredItems}
+        data={
+          filteredItems
+        }
 
 
         keyExtractor={
@@ -575,45 +629,45 @@ export function PostDashboard(){
 
 
 
-        renderItem={
-          ({
-            item,
-          })=>(
+        renderItem={({
+          item,
+        }) => (
 
-            <MyPostCard
+          <MyPostCard
 
-              item={item}
+            item={item}
 
-              isAdmin={isAdmin}
+            isAdmin={
+              isAdmin
+            }
 
-              onPublish={
-                handlePublish
-              }
+            onPublish={
+              handlePublish
+            }
 
-              onUnpublish={
-                handleUnpublish
-              }
+            onUnpublish={
+              handleUnpublish
+            }
 
-              onDelete={
-                confirmDelete
-              }
+            onDelete={
+              confirmDelete
+            }
 
-            />
+          />
 
-          )
-        }
+        )}
 
 
 
         contentContainerStyle={{
 
-          paddingHorizontal:16,
+          paddingHorizontal: 16,
 
-          paddingTop:18,
+          paddingTop: 18,
 
-          paddingBottom:50,
+          paddingBottom: 50,
 
-          flexGrow:1,
+          flexGrow: 1,
 
         }}
 
@@ -637,13 +691,16 @@ export function PostDashboard(){
 
 
 
+
         ListHeaderComponent={
 
           <>
 
             <PostSummary
 
-              summary={summary}
+              summary={
+                summary
+              }
 
               activeFilter={
                 activeFilter
@@ -664,7 +721,12 @@ export function PostDashboard(){
             {
               isLoading && (
 
-                <View className="items-center py-10">
+                <View
+                  className="
+                    items-center
+                    py-10
+                  "
+                >
 
                   <ActivityIndicator />
 
@@ -684,7 +746,13 @@ export function PostDashboard(){
             {
               error && (
 
-                <View className="rounded-xl bg-red-50 p-4">
+                <View
+                  className="
+                    rounded-xl
+                    bg-red-50
+                    p-4
+                  "
+                >
 
                   <Text className="text-red-600">
 
@@ -697,38 +765,43 @@ export function PostDashboard(){
               )
             }
 
-
           </>
 
         }
 
 
 
+       
+
         ListEmptyComponent={
 
           !isLoading && !error
 
-          ? (
+            ? (
 
-            <EmptyState
+              <EmptyState
 
-              message="No posts available"
+                message={
+                  activeFilter === 'published'
+                    ? 'No published posts available'
+                    : 'No posts available'
+                }
 
-            />
+              />
 
-          )
+            )
 
-          : null
+            : null
 
         }
 
 
 
-        showsVerticalScrollIndicator={false}
-
+        showsVerticalScrollIndicator={
+          false
+        }
 
       />
-
 
     </SafeAreaView>
 

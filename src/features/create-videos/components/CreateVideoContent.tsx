@@ -202,34 +202,25 @@ onNext,
 
 
 
-const pickVideo = async()=>{
+const pickVideo = async () => {
+  const result =
+    await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      allowsEditing: true,
+      quality: 1,
+    });
 
+  if (result.canceled) {
+    return;
+  }
 
-const result =
-await ImagePicker.launchImageLibraryAsync({
+  const asset = result.assets[0];
 
-mediaTypes:
- ImagePicker.MediaTypeOptions.Videos,
+  console.log('SELECTED VIDEO:', asset);
 
-allowsEditing:true,
-
-quality:1,
-
-});
-
-
-
-if(!result.canceled){
-
-setVideoUrl(
- result.assets[0].uri
-);
-
-
-}
-
+  // Local URI — use only for preview
+  setVideoUrl(asset.uri);
 };
-
 
 
 

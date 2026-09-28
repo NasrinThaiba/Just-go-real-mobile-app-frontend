@@ -7,95 +7,102 @@ import type {
 export type MyPostFilter =
   | 'all'
   | 'news'
-  | 'video';
+  | 'video'
+  | 'published';
 
 
 export type PostType =
   FeedItem['type'];
 
 
-
 export type PostSummaryData = {
-  totalPosts:number;
-  totalNews:number;
-  totalVideos:number;
-  totalFavorites:number;
-  totalViews:number;
-};
 
+  totalPosts: number;
+
+  totalNews: number;
+
+  totalVideos: number;
+
+  totalFavorites: number;
+
+  totalViews: number;
+
+  totalPublished: number;
+
+};
 
 
 // GET ALL MY POSTS
 export type GetMyPostsResponse = {
 
-  success:boolean;
+  success: boolean;
 
-  message?:string;
+  message?: string;
 
-  data:{
-    items:FeedItem[];
+  data: {
+    items: FeedItem[];
   };
 
 };
-
 
 
 // GET SINGLE POST
 export type GetPostByIdResponse = {
 
-  success:boolean;
+  success: boolean;
 
-  message?:string;
+  message?: string;
 
-  data:{
-    item:FeedItem;
+  data: {
+    item: FeedItem;
   };
 
 };
 
 
-
-// UPDATE POST
+// UPDATE POST STATUS
 export type UpdatePostStatusPayload = {
 
-  status:PostStatus;
+  status: PostStatus;
 
 };
-
 
 
 export type UpdatePostStatusResponse = {
 
-  success:boolean;
+  success: boolean;
 
-  message?:string;
+  message?: string;
 
-  data:{
-    item:FeedItem;
+  data: {
+    item: FeedItem;
   };
 
 };
 
 
-
+// DELETE POST
 export type DeletePostResponse = {
 
-  success:boolean;
+  success: boolean;
 
-  message?:string;
+  message?: string;
 
 };
 
 
-
+// QUERY PARAMS
 export type PostsQueryParams = {
 
-  type?:Exclude<MyPostFilter,'all'>;
+  type?: Exclude<
+    MyPostFilter,
+    'all' | 'published'
+  >;
 
-  status?:PostStatus;
+  status?: PostStatus;
 
-  page?:number;
+  page?: number;
 
-  limit?:number;
+  limit?: number;
 
 };

@@ -1,18 +1,37 @@
+// src/features/create-videos/types/video.types.ts
+
+
+// =====================================================
+// VIDEO TYPE
+// =====================================================
+
 export type VideoType =
   | 'breaking'
   | 'live'
   | 'latest';
 
 
+// =====================================================
+// VIDEO SOURCE
+// =====================================================
+
 export type VideoSource =
   | 'direct'
   | 'youtube';
 
 
+// =====================================================
+// VIDEO LANGUAGE
+// =====================================================
+
 export type VideoLanguage =
   | 'en'
   | 'ta';
 
+
+// =====================================================
+// VIDEO STATUS
+// =====================================================
 
 export type VideoStatus =
   | 'draft'
@@ -22,28 +41,31 @@ export type VideoStatus =
   | 'unpublished';
 
 
+// =====================================================
+// CREATE VIDEO PAYLOAD
+// =====================================================
 
 export type CreateVideoPayload = {
 
-  title:string;
+  title: string;
 
-  description?:string;
+  description?: string;
 
-  videoType:VideoType;
+  videoType: VideoType;
 
-  videoSource?:VideoSource;
+  videoSource?: VideoSource;
 
-  mediaUrl?:string;
+  mediaUrl?: string;
 
-  youtubeVideoId?:string;
+  youtubeVideoId?: string;
 
-  thumbnailUrl?:string;
+  thumbnailUrl?: string;
 
-  category?:string;
+  category?: string;
 
-  language?:VideoLanguage;
+  language?: VideoLanguage;
 
-  location?:string;
+  location?: string;
 
   status?:
     | 'draft'
@@ -52,48 +74,38 @@ export type CreateVideoPayload = {
 };
 
 
-
-
-// API response type
+// =====================================================
+// VIDEO API RESPONSE
+// =====================================================
 
 export type VideoItem = {
 
-  id:string;
+  id: string;
 
-  title:string;
+  title: string;
 
-  description:string | null;
+  description: string | null;
 
+  videoType: VideoType;
 
-  videoType:VideoType;
+  videoSource: VideoSource | null;
 
+  mediaUrl: string | null;
 
-  videoSource:VideoSource | null;
+  youtubeVideoId: string | null;
 
+  thumbnailUrl: string | null;
 
-  mediaUrl:string | null;
+  category: string | null;
 
+  language: VideoLanguage;
 
-  youtubeVideoId:string | null;
+  location: string | null;
 
+  status: VideoStatus;
 
-  thumbnailUrl:string | null;
+  createdAt: string;
 
-
-  category:string | null;
-
-
-  language:VideoLanguage;
-
-
-  location:string | null;
-
-
-  status:VideoStatus;
-
-
-  createdAt:string;
-
-  updatedAt:string;
+  updatedAt: string;
 
 };

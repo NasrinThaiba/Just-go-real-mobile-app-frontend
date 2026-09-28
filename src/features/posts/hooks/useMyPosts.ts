@@ -14,13 +14,33 @@ import {
 } from '@/features/posts/api/posts.api';
 
 
-
 export type MyPostFilter =
   | 'all'
   | 'news'
-  | 'video';
+  | 'video'
+  | 'published';
 
 
+export type PostSummaryData = {
+
+  totalPosts: number;
+
+  totalNews: number;
+
+  totalVideos: number;
+
+  totalFavorites: number;
+
+  totalViews: number;
+
+  totalPublished: number;
+
+};
+
+
+// =====================================================
+// HOOK
+// =====================================================
 
 export function useMyPosts() {
 
@@ -31,12 +51,10 @@ export function useMyPosts() {
   ] = useState<FeedItem[]>([]);
 
 
-
   const [
     isLoading,
     setIsLoading,
   ] = useState(true);
-
 
 
   const [
@@ -45,213 +63,181 @@ export function useMyPosts() {
   ] = useState<string | null>(null);
 
 
+  // ===================================================
+  // FETCH POSTS
+  // ===================================================
 
-
-  // ===============================
-  // LOAD POSTS FROM BACKEND
-  // ===============================
-
-  const loadPosts =
+  const fetchPosts =
     useCallback(
-      async()=>{
+      async () => {
 
-        try{
-
+        try {
 
           setIsLoading(true);
 
           setError(null);
 
 
-
-          const createdNews =
+          const nextItems =
             await postsApi.getMyPosts();
 
 
-
-          const allPosts =
-            Array.isArray(createdNews)
-              ? createdNews.sort(
-                  (
-                    first,
-                    second,
-                  )=>{
-
-
-                    const firstDate =
-                      new Date(
-                        first.createdAt,
-                      ).getTime();
-
-
-
-                    const secondDate =
-                      new Date(
-                        second.createdAt,
-                      ).getTime();
-
-
-
-                    return (
-                      secondDate -
-                      firstDate
-                    );
-
-                  },
-                )
-              : [];
-
-
-
-
-          setItems(
-            allPosts,
+          console.log(
+            'MY POSTS DATA:',
+            JSON.stringify(
+              nextItems,
+              null,
+              2,
+            ),
           );
 
 
+          setItems(
+            Array.isArray(nextItems)
+              ? nextItems
+              : [],
+          );
 
         }
-        catch(loadError){
+        catch (error) {
 
-
-          console.error(
-            'Failed to load posts:',
-            loadError,
+          console.log(
+            'GET MY POSTS ERROR:',
+            error,
           );
 
 
           setError(
-            'Unable to load your posts.',
+            'Failed to load posts.',
           );
 
 
-        }
-        finally{
+          setItems([]);
 
+        }
+        finally {
 
           setIsLoading(false);
 
-
         }
-
 
       },
       [],
     );
 
 
+  // ===================================================
+  // INITIAL LOAD
+  // ===================================================
 
+  useEffect(() => {
 
+    void fetchPosts();
 
-  useEffect(()=>{
-
-    void loadPosts();
-
-  },[
-    loadPosts,
+  }, [
+    fetchPosts,
   ]);
 
 
-
-
-
-
-
-  // ===============================
+  // ===================================================
   // SUMMARY
-  // ===============================
-
+  // ===================================================
 
   const summary =
-    useMemo(
-      ()=>{
+    useMemo<PostSummaryData>(() => {
 
 
-        return {
+      const totalPosts =
+        items.length;
 
 
-          totalPosts:
-            items.length,
+      const totalNews =
+        items.filter(
+          item =>
+            item.type === 'news',
+        ).length;
 
 
-
-          totalNews:
-            items.filter(
-              item =>
-                item.type === 'news',
-            ).length,
-
+      const totalVideos =
+        items.filter(
+          item =>
+            item.type === 'video',
+        ).length;
 
 
-          totalVideos:
-            items.filter(
-              item =>
-                item.type === 'video',
-            ).length,
-
-
-
-          totalFavorites:
-            items.reduce(
-              (
-                total,
-                item,
-              )=>
-                total +
-                (item.likes ?? 0),
-
-              0,
+      const totalFavorites =
+        items.reduce(
+          (
+            total,
+            item,
+          ) =>
+            total +
+            Number(
+              item.likes ?? 0,
             ),
+          0,
+        );
 
 
-
-          totalViews:
-            items.reduce(
-              (
-                total,
-                item,
-              )=>
-
-                total +
-                (item.views ?? 0),
-
-              0,
+      const totalViews =
+        items.reduce(
+          (
+            total,
+            item,
+          ) =>
+            total +
+            Number(
+              item.views ?? 0,
             ),
+          0,
+        );
 
 
-        };
+      const totalPublished =
+        items.filter(
+          item =>
+            item.status === 'published',
+        ).length;
 
 
-      },
-      [
-        items,
-      ],
-    );
+      return {
+
+        totalPosts,
+
+        totalNews,
+
+        totalVideos,
+
+        totalFavorites,
+
+        totalViews,
+
+        totalPublished,
+
+      };
+
+    }, [
+      items,
+    ]);
 
 
-
-
+  // ===================================================
+  // RETURN
+  // ===================================================
 
   return {
 
-
     items,
-
 
     summary,
 
-
     isLoading,
-
 
     error,
 
-
     refetch:
-      loadPosts,
-
+      fetchPosts,
 
   };
-
 
 }

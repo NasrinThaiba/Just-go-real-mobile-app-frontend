@@ -196,33 +196,26 @@ const pickImage = async () => {
   const permission =
     await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-
-  if(!permission.granted){
+  if (!permission.granted) {
     alert("Permission required");
     return;
   }
 
-
   const result =
     await ImagePicker.launchImageLibraryAsync({
-
       mediaTypes:
         ImagePicker.MediaTypeOptions.Images,
-
-      quality:0.8,
-
+      quality: 0.8,
     });
 
-
-  if(!result.canceled){
-
-    const imageUri =
-      result.assets[0].uri;
-
-
-    setMediaUrl(imageUri);
-
+  if (result.canceled) {
+    return;
   }
+
+  const asset = result.assets[0];
+
+  // Temporary local preview only
+  setMediaUrl(asset.uri);
 
 };
 
