@@ -12,47 +12,35 @@ import {
 
 
 import type {
-  VideoCategory,
-  VideoLanguage,
   VideoType,
+  VideoLanguage,
 } from "../types/video.types";
-
-
 
 
 
 type Props = {
 
+title:string;
 
-  title:string;
+description:string;
 
+videoUrl:string;
 
-  description:string;
+youtubeUrl:string;
 
+thumbnailUrl:string;
 
-  videoUrl:string;
+category:string;
 
+videoType:VideoType;
 
-  thumbnailUrl:string;
+language:VideoLanguage;
 
+location:string;
 
+onBack:()=>void;
 
-  category:VideoCategory;
-
-
-  videoType:VideoType;
-
-
-  language:VideoLanguage;
-
-
-
-
-  onBack:()=>void;
-
-
-  onNext:()=>void;
-
+onNext:()=>void;
 
 };
 
@@ -60,44 +48,41 @@ type Props = {
 
 
 
-
-
-
-
 export default function CreateVideoPreview({
-
 
 title,
 
-
 description,
-
 
 videoUrl,
 
+youtubeUrl,
 
 thumbnailUrl,
 
-
-category,
-
-
 videoType,
-
 
 language,
 
+location,
+
+category,
 
 onBack,
 
-
 onNext,
-
 
 
 }:Props){
 
 
+
+const source =
+youtubeUrl
+?
+'youtube'
+:
+'direct';
 
 
 
@@ -106,135 +91,66 @@ return (
 <View>
 
 
-
-
-
 {/* HEADER */}
 
-
-<View
-
-className="mb-6"
-
->
+<View className="mb-6">
 
 
-<Text
-
-className="text-3xl font-black text-slate-900"
-
->
+<Text className="text-3xl font-black text-slate-900">
 
 Preview Video
 
 </Text>
 
 
-
-<Text
-
-className="mt-2 text-sm text-slate-500"
-
->
+<Text className="mt-2 text-sm text-slate-500">
 
 Review your video before publishing
 
 </Text>
 
 
-
 </View>
 
 
 
 
 
+<View className="rounded-3xl bg-white p-5">
 
 
 
 
-{/* VIDEO CARD */}
-
-
-
-<View
-
-className="rounded-3xl bg-white p-5"
-
->
-
-
-
-
-
-
-
-{/* THUMBNAIL */}
-
-
+{/* VIDEO PREVIEW */}
 
 {
-
 thumbnailUrl ? (
 
-
-<View
-
-className="relative"
-
->
-
+<View className="relative">
 
 <Image
-
 source={{
-
-uri:thumbnailUrl
-
+ uri: thumbnailUrl
 }}
-
-className="h-56 w-full rounded-3xl"
-
-resizeMode="cover"
-
+className="h-48 w-full rounded-3xl"
 />
 
 
+<View className="absolute inset-0 items-center justify-center">
 
-<View
-
-className="absolute inset-0 items-center justify-center"
-
->
-
-
-<View
-
-className="h-16 w-16 items-center justify-center rounded-full bg-black/60"
-
->
-
+<View className="h-14 w-14 items-center justify-center rounded-full bg-black/50">
 
 <Ionicons
-
 name="play"
-
-size={32}
-
+size={30}
 color="white"
-
 />
 
+</View>
 
 </View>
 
-
 </View>
-
-
-
-</View>
-
 
 )
 
@@ -242,46 +158,38 @@ color="white"
 
 (
 
-
-<View
-
-className="h-56 items-center justify-center rounded-3xl bg-slate-100"
-
->
-
+<View className="h-48 items-center justify-center rounded-3xl bg-slate-100">
 
 <Ionicons
-
-name="videocam-outline"
-
-size={45}
-
-color="#94A3B8"
-
+name={
+ source === 'youtube'
+ ? "logo-youtube"
+ : "videocam-outline"
+}
+size={50}
+color={
+ source === 'youtube'
+ ? "#FF0000"
+ : "#64748B"
+}
 />
 
 
+<Text className="mt-3 font-bold text-slate-600">
 
-<Text
-
-className="mt-3 text-sm font-bold text-slate-400"
-
->
-
-No Thumbnail Selected
+{
+ source === 'youtube'
+ ? "YouTube Video"
+ : "Local Uploaded Video"
+}
 
 </Text>
 
 
 </View>
 
-
 )
-
 }
-
-
-
 
 
 
@@ -291,70 +199,49 @@ No Thumbnail Selected
 {/* TAGS */}
 
 
-
-<View
-
-className="mt-5 flex-row flex-wrap gap-3"
-
->
+<View className="mt-5 flex-row flex-wrap gap-3">
 
 
+<View className="rounded-full bg-orange-50 px-4 py-2">
 
-
-
-<View
-
-className="rounded-full bg-orange-50 px-4 py-2"
-
->
-
-
-<Text
-
-className="font-bold text-orange-600"
-
->
+<Text className="font-bold text-orange-600">
 
 {category}
 
 </Text>
 
-
 </View>
 
 
 
 
+<View className="rounded-full bg-blue-50 px-4 py-2">
 
-
-
-
-<View
-
-className="rounded-full bg-blue-50 px-4 py-2"
-
->
-
-
-<Text
-
-className="font-bold text-blue-600"
-
->
+<Text className="font-bold text-blue-600">
 
 {videoType}
 
 </Text>
 
-
 </View>
 
 
 
 
 
+<View className="rounded-full bg-green-50 px-4 py-2">
+
+<Text className="font-bold text-green-600">
+
+{source}
+
+</Text>
+
 </View>
 
+
+
+</View>
 
 
 
@@ -366,25 +253,13 @@ className="font-bold text-blue-600"
 {/* TITLE */}
 
 
-
-<Text
-
-className="mt-6 text-2xl font-black text-slate-900"
-
->
-
+<Text className="mt-6 text-2xl font-black text-slate-900">
 
 {
-
-title ||
-
-"Your video title"
-
+title || "Your video title"
 }
 
-
 </Text>
-
 
 
 
@@ -396,22 +271,12 @@ title ||
 {/* DESCRIPTION */}
 
 
-
-<Text
-
-className="mt-4 text-base leading-6 text-slate-600"
-
->
-
+<Text className="mt-4 text-base leading-6 text-slate-600">
 
 {
-
-description ||
-
+description || 
 "Your video description will appear here"
-
 }
-
 
 </Text>
 
@@ -422,54 +287,41 @@ description ||
 
 
 
-
-{/* YOUTUBE URL */}
-
+{/* MEDIA URL */}
 
 
-<View
-
-className="mt-6 flex-row items-center rounded-2xl bg-red-50 p-4"
-
->
+<View className="mt-6 rounded-2xl bg-slate-100 p-4">
 
 
-<Ionicons
+<Text className="text-xs font-bold text-slate-400">
 
-name="logo-youtube"
+SOURCE
 
-size={22}
 
-color="#FF0000"
-
-/>
-
+</Text>
 
 
 <Text
 
-numberOfLines={1}
+numberOfLines={2}
 
-className="ml-3 flex-1 font-semibold text-red-600"
+className="mt-2 font-semibold text-slate-700"
 
 >
 
-
 {
-
-videoUrl ||
-
-"No YouTube URL added"
-
+source === 'youtube'
+?
+youtubeUrl
+:
+videoUrl
 }
 
-
 </Text>
+
 
 
 </View>
-
-
 
 
 
@@ -480,58 +332,36 @@ videoUrl ||
 {/* INFO */}
 
 
-
-<View
-
-className="mt-6 gap-3"
-
->
+<View className="mt-6 gap-4">
 
 
-
-<View
-
-className="flex-row items-center"
-
->
+<View className="flex-row items-center">
 
 
 <Ionicons
 
 name="language-outline"
 
-size={18}
+size={20}
 
 color="#64748B"
 
 />
 
 
+<Text className="ml-3 font-bold text-slate-700">
 
-<Text
-
-className="ml-3 font-semibold text-slate-700"
-
->
-
-Language :
+Language:
 
 {' '}
 
 {
-
 language === 'en'
-
 ?
-
 'English'
-
 :
-
 'Tamil'
-
 }
-
 
 </Text>
 
@@ -539,40 +369,44 @@ language === 'en'
 </View>
 
 
+<View className="flex-row items-center">
+
+<Ionicons
+name="location-outline"
+size={20}
+color="#64748B"
+/>
+
+<Text className="ml-3 font-bold text-slate-700">
+Location: {location}
+</Text>
+
+</View>
 
 
 
-<View
 
-className="flex-row items-center"
-
->
+<View className="flex-row items-center">
 
 
 <Ionicons
 
 name="play-circle-outline"
 
-size={18}
+size={20}
 
 color="#64748B"
 
 />
 
 
+<Text className="ml-3 font-bold text-slate-700">
 
-<Text
-
-className="ml-3 font-semibold text-slate-700"
-
->
-
-Type :
+Type:
 
 {' '}
 
 {videoType}
-
 
 </Text>
 
@@ -582,7 +416,6 @@ Type :
 
 
 
-
 </View>
 
 
@@ -591,68 +424,29 @@ Type :
 
 
 
+{/* NOTE */}
 
 
-{/* IMPORTANT */}
+<View className="mt-6 rounded-2xl bg-orange-50 p-4">
 
 
-
-<View
-
-className="mt-6 rounded-2xl bg-orange-50 p-4"
-
->
-
-
-
-<View
-
-className="flex-row items-center"
-
->
-
-
-<Ionicons
-
-name="information-circle-outline"
-
-size={22}
-
-color="#F97316"
-
-/>
-
-
-
-<Text
-
-className="ml-2 font-black text-orange-700"
-
->
+<Text className="font-bold text-orange-700">
 
 Important
 
 </Text>
 
 
-</View>
+<Text className="mt-2 text-sm text-orange-700">
 
-
-
-
-
-<Text
-
-className="mt-2 text-sm leading-5 text-orange-700"
-
->
-
-Your video will be submitted for review.
-After admin approval, it will be visible to users.
+Video will be submitted for admin approval before publishing.
 
 </Text>
 
 
+</View>
+
+
 
 
 
@@ -664,28 +458,10 @@ After admin approval, it will be visible to users.
 
 
 
-</View>
+{/* BUTTONS */}
 
 
-
-
-
-
-
-
-
-{/* ACTION BUTTONS */}
-
-
-
-<View
-
-className="mt-6 flex-row gap-3"
-
->
-
-
-
+<View className="mt-6 flex-row gap-3">
 
 
 <Pressable
@@ -697,11 +473,7 @@ className="flex-1 items-center rounded-2xl border border-slate-200 py-4"
 >
 
 
-<Text
-
-className="font-black text-slate-700"
-
->
+<Text className="font-black text-slate-700">
 
 Edit
 
@@ -709,8 +481,6 @@ Edit
 
 
 </Pressable>
-
-
 
 
 
@@ -727,11 +497,7 @@ className="flex-1 items-center rounded-2xl bg-orange-500 py-4"
 >
 
 
-<Text
-
-className="font-black text-white"
-
->
+<Text className="font-black text-white">
 
 Continue
 
@@ -742,12 +508,7 @@ Continue
 
 
 
-
-
-
 </View>
-
-
 
 
 

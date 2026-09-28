@@ -14,11 +14,9 @@ export type NewsType =
 
 export type VideoType =
   | 'breaking'
-  | 'news'
+  | 'latest'
   | 'live'
-  | 'interview'
-  | 'short'
-  | 'featured';
+  
 
 export type PostStatus =
   | 'draft'

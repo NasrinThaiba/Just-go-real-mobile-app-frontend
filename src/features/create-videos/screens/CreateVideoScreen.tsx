@@ -3,7 +3,6 @@ import {
   useState,
 } from 'react';
 
-
 import {
   Alert,
   KeyboardAvoidingView,
@@ -11,19 +10,14 @@ import {
   ScrollView,
 } from 'react-native';
 
-
 import {
   SafeAreaView,
 } from 'react-native-safe-area-context';
-
-
 
 import {
   router,
   useLocalSearchParams,
 } from 'expo-router';
-
-
 
 
 import {
@@ -33,8 +27,6 @@ import {
 } from '../api/video.api';
 
 
-
-
 import type {
   CreateVideoPayload,
   VideoLanguage,
@@ -42,33 +34,15 @@ import type {
 } from '../types/video.types';
 
 
-
-
-
 import CreateVideoContent from "../components/CreateVideoContent";
-
 import CreateVideoPreview from "../components/CreateVideoPreview";
-
 import CreateVideoPublish from "../components/CreateVideoPublish";
 
 
-
-
-
-
-
 type Step =
-
   | 'content'
-
   | 'preview'
-
   | 'publish';
-
-
-
-
-
 
 
 
@@ -77,48 +51,31 @@ export default function CreateVideoScreen(){
 
 function extractYoutubeId(url:string){
 
-
-const regex =
-/(?:youtube\.com\/watch\?v=|youtu.be\/)([^&?/]+)/;
-
-
-const match =
-url.match(regex);
+  const regex =
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/;
 
 
-return match?.[1];
+  const match = url.match(regex);
+
+
+  return match?.[1];
 
 }
 
 
+
 const params =
-
 useLocalSearchParams<{
-
  id?:string;
-
 }>();
 
 
-
-
-
 const videoId =
-
 params.id;
 
 
-
-
-
 const isEdit =
-
 Boolean(videoId);
-
-
-
-
-
 
 
 
@@ -128,91 +85,65 @@ Boolean(videoId);
 
 
 const [step,setStep] =
-
-useState<Step>(
-
- 'content'
-
-);
-
-
-
+useState<Step>('content');
 
 
 const [title,setTitle] =
-
 useState('');
-
-
-
 
 
 const [description,setDescription] =
-
 useState('');
 
 
-
-
-
+/**
+ * Local uploaded video
+ */
 const [videoUrl,setVideoUrl] =
-
 useState('');
 
 
+
+/**
+ * Youtube URL
+ */
+const [youtubeUrl,setYoutubeUrl] =
+useState('');
 
 
 
 const [thumbnailUrl,setThumbnailUrl] =
-
 useState('');
 
 
 
-
-
 const [videoType,setVideoType] =
-
 useState<VideoType>(
-
- 'normal'
-
+  'latest'
 );
 
 
 
-
-
 const [category,setCategory] =
-useState<string>(
+useState(
   'other'
 );
 
 
 
-
-
 const [language,setLanguage] =
-
 useState<VideoLanguage>(
-
- 'en'
-
+  'en'
 );
 
 
+const [location,setLocation] =
+useState('');
 
 
 
 const [loading,setLoading] =
-
 useState(false);
-
-
-
-
-
-
 
 
 
@@ -222,142 +153,90 @@ useState(false);
 // EDIT LOAD
 // ======================
 
-
 useEffect(()=>{
 
+  if(!videoId){
+    return;
+  }
 
- if(!videoId){
 
-  return;
+  const id = videoId;
 
- }
 
+  async function loadVideo(){
 
+    try{
 
- const loadVideo = async()=>{
+      const data =
+        await getMyVideoById(id);
 
 
- try{
+      setTitle(
+        data.title ?? ''
+      );
 
 
- const data =
+      setDescription(
+        data.description ?? ''
+      );
 
- await getMyVideoById(
 
-  videoId,
+      setVideoUrl(
+        data.videoSource === 'direct'
+          ? data.mediaUrl ?? ''
+          : ''
+      );
 
- );
 
+      setYoutubeUrl(
+        data.videoSource === 'youtube'
+        ? `https://youtube.com/watch?v=${data.youtubeVideoId}`
+        :''
+      );
 
 
+      setThumbnailUrl(
+        data.thumbnailUrl ?? ''
+      );
 
 
- setTitle(
+      setVideoType(
+        data.videoType ?? 'latest'
+      );
 
-  data.title ?? '',
 
- );
+      setCategory(
+        data.category ?? ''
+      );
 
 
+      setLocation(
+        data.location ?? ''
+      );
 
 
+      setLanguage(
+        data.language ?? 'en'
+      );
 
- setDescription(
 
-  data.description ?? '',
+    }
+    catch(error){
 
- );
+      console.log(
+        "LOAD VIDEO ERROR",
+        error
+      );
 
+    }
 
+  }
 
 
+  loadVideo();
 
- setVideoUrl(
 
-  data.videoUrl ?? '',
-
- );
-
-
-
-
-
- setThumbnailUrl(
-
-  data.thumbnailUrl ?? '',
-
- );
-
-
-
-
-
- setVideoType(
-
-  data.videoType,
-
- );
-
-
-
-
-
- setCategory(
-
-  data.category,
-
- );
-
-
-
-
-
- setLanguage(
-
-  data.language,
-
- );
-
-
-
-
-
- }
-
- catch(error){
-
-
- console.log(
-
-  "LOAD VIDEO ERROR:",
-
-  error,
-
- );
-
-
- }
-
-
-
- };
-
-
-
-
- loadVideo();
-
-
-
-},[
-
-videoId
-
-]);
-
-
-
-
+},[videoId]);
 
 
 
@@ -368,6 +247,7 @@ videoId
 // ======================
 // SAVE VIDEO
 // ======================
+
 
 async function saveVideo(){
 
@@ -380,7 +260,7 @@ setLoading(true);
 
 
 const isYoutube =
-videoUrl.startsWith("http");
+youtubeUrl.trim().length > 0;
 
 
 
@@ -394,18 +274,24 @@ videoType,
 
 videoSource:
 isYoutube
-? 'youtube'
-: 'direct',
+?
+'youtube'
+:
+'direct',
 
 mediaUrl:
 !isYoutube
-? videoUrl
-: undefined,
+?
+videoUrl
+:
+undefined,
 
 youtubeVideoId:
 isYoutube
-? extractYoutubeId(videoUrl)
-: undefined,
+?
+extractYoutubeId(youtubeUrl)
+:
+undefined,
 
 thumbnailUrl,
 
@@ -413,10 +299,11 @@ category,
 
 language,
 
-status:"pending",
+location,
+
+status:'pending',
 
 };
-
 
 
 console.log(
@@ -426,23 +313,27 @@ payload
 
 
 
-if(videoId){
+
+if(isEdit && videoId){
+
 
 await updateVideo(
-videoId,
-payload
+ videoId,
+ payload
 );
+
 
 }
 else{
 
 
 await createVideo(
-payload
+ payload
 );
 
 
 }
+
 
 
 
@@ -453,12 +344,11 @@ Alert.alert(
 
 
 
-router.replace("/video");
+router.replace('/video');
 
 
 
 }
-
 catch(error:any){
 
 
@@ -466,6 +356,7 @@ console.log(
 "SAVE VIDEO ERROR",
 error.response?.data
 );
+
 
 
 Alert.alert(
@@ -477,22 +368,14 @@ error.response?.data
 
 
 }
-
 finally{
-
 
 setLoading(false);
 
-
 }
 
 
 }
-
-
-
-
-
 
 
 
@@ -503,9 +386,7 @@ setLoading(false);
 return (
 
 <SafeAreaView
-
 className="flex-1 bg-slate-50"
-
 >
 
 
@@ -514,21 +395,14 @@ className="flex-1 bg-slate-50"
 className="flex-1"
 
 behavior={
-
 Platform.OS === 'ios'
-
 ?
-
 'padding'
-
 :
-
 undefined
-
 }
 
 >
-
 
 
 <ScrollView
@@ -536,11 +410,8 @@ undefined
 showsVerticalScrollIndicator={false}
 
 contentContainerStyle={{
-
 padding:16,
-
 paddingBottom:120,
-
 }}
 
 >
@@ -549,59 +420,60 @@ paddingBottom:120,
 
 
 
-
-
 {
-
 step === 'content'
-
 &&
-
 (
-
 
 <CreateVideoContent
 
 title={title}
 setTitle={setTitle}
 
-
 description={description}
 setDescription={setDescription}
-
 
 videoType={videoType}
 setVideoType={setVideoType}
 
-
 category={category}
 setCategory={setCategory}
-
 
 language={language}
 setLanguage={setLanguage}
 
-
 videoUrl={videoUrl}
 setVideoUrl={setVideoUrl}
-
 
 youtubeUrl={youtubeUrl}
 setYoutubeUrl={setYoutubeUrl}
 
-
 thumbnailUrl={thumbnailUrl}
 setThumbnailUrl={setThumbnailUrl}
+
+
+location={location}
+setLocation={setLocation}
 
 
 onNext={()=>setStep('preview')}
 
 />
 
+)
+
+}
+
+
+
+
+
+
+
+{
+step === 'preview'
 &&
-
 (
-
 
 <CreateVideoPreview
 
@@ -615,6 +487,9 @@ description={description}
 videoUrl={videoUrl}
 
 
+youtubeUrl={youtubeUrl}
+
+
 thumbnailUrl={thumbnailUrl}
 
 
@@ -627,22 +502,26 @@ videoType={videoType}
 language={language}
 
 
-
-onBack={()=>setStep('content')}
-
+location={location}
 
 
-onNext={()=>setStep('publish')}
+onBack={()=>
+setStep('content')
+}
+
+
+
+onNext={()=>
+setStep('publish')
+}
 
 
 
 />
 
-
 )
 
 }
-
 
 
 
@@ -652,13 +531,9 @@ onNext={()=>setStep('publish')}
 
 
 {
-
 step === 'publish'
-
 &&
-
 (
-
 
 <CreateVideoPublish
 
@@ -667,7 +542,9 @@ loading={loading}
 
 
 
-onBack={()=>setStep('preview')}
+onBack={()=>
+setStep('preview')
+}
 
 
 
@@ -676,30 +553,21 @@ onPublish={saveVideo}
 
 />
 
-
 )
 
 }
 
 
 
-
-
-
-
-
 </ScrollView>
-
 
 
 </KeyboardAvoidingView>
 
 
-
 </SafeAreaView>
 
 );
-
 
 
 }

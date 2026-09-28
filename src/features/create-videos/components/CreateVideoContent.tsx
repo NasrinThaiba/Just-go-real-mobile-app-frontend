@@ -37,12 +37,6 @@ const CATEGORIES = [
 const VIDEO_TYPES = [
 
 {
-  label:"News",
-  value:"news",
-  icon:"newspaper-outline",
-},
-
-{
   label:"Breaking",
   value:"breaking",
   icon:"flash-outline",
@@ -55,21 +49,55 @@ const VIDEO_TYPES = [
 },
 
 {
-  label:"Interview",
-  value:"interview",
-  icon:"person-outline",
+  label:"Latest",
+  value:"latest",
+  icon:"time-outline",
+},
+
+] as const;
+
+
+
+const LOCATIONS = [
+
+{
+ label:"Tamil Nadu",
+ value:"tamil-nadu",
 },
 
 {
-  label:"Short",
-  value:"short",
-  icon:"phone-portrait-outline",
+ label:"Chennai",
+ value:"chennai",
 },
 
 {
-  label:"Featured",
-  value:"featured",
-  icon:"star-outline",
+ label:"Coimbatore",
+ value:"coimbatore",
+},
+
+{
+ label:"Madurai",
+ value:"madurai",
+},
+
+{
+ label:"Tirunelveli",
+ value:"tirunelveli",
+},
+
+{
+ label:"Tenkasi",
+ value:"tenkasi",
+},
+
+{
+ label:"Salem",
+ value:"salem",
+},
+
+{
+ label:"Thoothukudi",
+ value:"thoothukudi",
 },
 
 ];
@@ -105,6 +133,10 @@ setDescription:(v:string)=>void;
 
 videoType:VideoType;
 setVideoType:(v:VideoType)=>void;
+
+
+location:string;
+setLocation:(v:string)=>void;
 
 
 language:VideoLanguage;
@@ -160,6 +192,9 @@ setThumbnailUrl,
 
 category,
 setCategory,
+
+location,
+setLocation,
 
 onNext,
 
@@ -624,7 +659,89 @@ language===item.value
 </View>
 
 
+{/* LOCATION */}
 
+<Text className="mb-3 mt-6 font-bold text-slate-700">
+Location
+</Text>
+
+
+<View className="flex-row flex-wrap gap-3">
+
+
+{
+LOCATIONS.map(item=>(
+
+
+<Pressable
+
+key={item.value}
+
+onPress={()=>
+setLocation(item.value)
+}
+
+className={`
+
+w-[30%]
+
+rounded-full
+
+py-3
+
+items-center
+
+
+${
+location===item.value
+
+?
+
+"bg-orange-500"
+
+:
+
+"bg-slate-100"
+
+}
+
+`}
+
+>
+
+
+<Text
+
+className={
+
+location===item.value
+
+?
+
+"text-white font-bold"
+
+:
+
+"text-slate-700 font-bold"
+
+}
+
+>
+
+{item.label}
+
+</Text>
+
+
+</Pressable>
+
+
+))
+
+}
+
+
+</View>
 
 
 
