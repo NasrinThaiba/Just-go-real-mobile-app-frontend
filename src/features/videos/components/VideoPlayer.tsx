@@ -1,139 +1,163 @@
 import { View } from 'react-native';
-import { useState } from 'react';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
-
-// types
 type VideoPlayerProps = {
-  mediaUrl:string;
-  videoSource?:'direct' | 'youtube';
-  youtubeVideoId?:string;
-  height?:number;
-  autoPlay?:boolean;
+  mediaUrl: string;
+  videoSource?: 'direct' | 'youtube';
+  youtubeVideoId?: string;
+  height?: number;
+  autoPlay?: boolean;
 };
 
 
-// extract function
-function extractYouTubeVideoId(value?:string){
-   // updated regex here
+function extractYouTubeVideoId(
+  value?: string,
+): string | undefined {
+
+  if (!value) {
+    return undefined;
+  }
+
+  const match = value.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
+
+  return match?.[1];
 }
 
 
-// Direct video component
 function DirectVideoPlayer({
- uri,
- height,
- autoPlay
-}:{
- uri:string;
- height:number;
- autoPlay:boolean;
-}){
+  uri,
+  height,
+  autoPlay,
+}: {
+  uri: string;
+  height: number;
+  autoPlay: boolean;
+}) {
 
- const player = useVideoPlayer(uri,(player)=>{
-   player.loop=false;
+  console.log('DIRECT VIDEO URI:', uri);
 
-   if(autoPlay){
-     player.play();
-   }
- });
+  const player = useVideoPlayer(
+    uri,
+    (player) => {
+
+      player.loop = false;
+
+      if (autoPlay) {
+        player.play();
+      }
+
+    },
+  );
 
 
- return(
-   <VideoView
-     player={player}
-     nativeControls
-     style={{
-       width:'100%',
-       height,
-       backgroundColor:'#000'
-     }}
-   />
- );
+  return (
+    <VideoView
+      player={player}
+      nativeControls
+      style={{
+        width: '100%',
+        height,
+        backgroundColor: '#000',
+      }}
+    />
+  );
 }
 
 
-
-// YOUR UPDATED COMPONENT HERE
 export function VideoPlayer({
-
- mediaUrl,
- videoSource='direct',
- youtubeVideoId,
- height=300,
- autoPlay=false
-
-}:VideoPlayerProps){
+  mediaUrl,
+  videoSource = 'direct',
+  youtubeVideoId,
+  height = 300,
+  autoPlay = false,
+}: VideoPlayerProps) {
 
 
- const [youtubeReady,setYoutubeReady]=useState(false);
+  const resolvedYouTubeVideoId =
+    youtubeVideoId ||
+    extractYouTubeVideoId(mediaUrl);
 
 
- const resolvedYouTubeVideoId =
-   youtubeVideoId ?? extractYouTubeVideoId(mediaUrl);
+  const isYouTubeVideo =
+    videoSource === 'youtube' &&
+    Boolean(resolvedYouTubeVideoId);
 
 
+  console.log(
+    'VIDEO PLAYER:',
+    {
+      mediaUrl,
+      videoSource,
+      youtubeVideoId,
+      resolvedYouTubeVideoId,
+      isYouTubeVideo,
+    },
+  );
 
- const isYouTubeVideo =
-   videoSource === 'youtube' ||
-   Boolean(resolvedYouTubeVideoId);
 
+  if (
+    isYouTubeVideo &&
+    resolvedYouTubeVideoId
+  ) {
 
-
- if(isYouTubeVideo && resolvedYouTubeVideoId){
-
-   return(
-     <View
-       style={{
-        width:'100%',
-        height,
-        backgroundColor:'#000'
-       }}
-     >
-
-       <YoutubePlayer
-        height={height}
-        videoId={resolvedYouTubeVideoId}
-
-        play={false}
-
-        onReady={()=>{
-          console.log("Youtube ready");
+    return (
+      <View
+        style={{
+          width: '100%',
+          height,
+          backgroundColor: '#000',
         }}
+      >
 
-        webViewProps={{
-          allowsInlineMediaPlayback:true,
-          javaScriptEnabled:true,
-          domStorageEnabled:true,
-          originWhitelist:[
-            '*'
-          ],
-        }}
+        <YoutubePlayer
+          height={height}
+          videoId={resolvedYouTubeVideoId}
+          play={autoPlay}
 
-        webViewStyle={{
-          backgroundColor:"#000"
-        }}
+          webViewProps={{
+            allowsInlineMediaPlayback: true,
+            javaScriptEnabled: true,
+            domStorageEnabled: true,
+            originWhitelist: ['*'],
+          }}
 
-        initialPlayerParams={{
-          controls:true,
-          modestbranding:true,
-          rel:false,
+          webViewStyle={{
+            backgroundColor: '#000',
+          }}
+
+          initialPlayerParams={{
+            controls: true,
+            modestbranding: true,
+            rel: false,
+          }}
+        />
+
+      </View>
+    );
+  }
+
+
+  if (!mediaUrl) {
+    return (
+      <View
+        style={{
+          width: '100%',
+          height,
+          backgroundColor: '#000',
         }}
       />
-
-     </View>
-   );
-
- }
+    );
+  }
 
 
- return(
-   <DirectVideoPlayer
-     uri={mediaUrl}
-     height={height}
-     autoPlay={autoPlay}
-   />
- );
-
+  return (
+    <DirectVideoPlayer
+      uri={mediaUrl}
+      height={height}
+      autoPlay={autoPlay}
+    />
+  );
 }

@@ -123,43 +123,40 @@ const LANGUAGES = [
 
 type Props = {
 
-title:string;
-setTitle:(v:string)=>void;
+  title: string;
+  setTitle: (v: string) => void;
 
+  description: string;
+  setDescription: (v: string) => void;
 
-description:string;
-setDescription:(v:string)=>void;
+  videoType: VideoType;
+  setVideoType: (v: VideoType) => void;
 
+  location: string;
+  setLocation: (v: string) => void;
 
-videoType:VideoType;
-setVideoType:(v:VideoType)=>void;
+  language: VideoLanguage;
+  setLanguage: (v: VideoLanguage) => void;
 
+  videoUrl: string;
+  setVideoUrl: (v: string) => void;
 
-location:string;
-setLocation:(v:string)=>void;
+  videoAsset: ImagePicker.ImagePickerAsset | null;
 
+  setVideoAsset: (
+    asset: ImagePicker.ImagePickerAsset | null
+  ) => void;
 
-language:VideoLanguage;
-setLanguage:(v:VideoLanguage)=>void;
+  youtubeUrl: string;
+  setYoutubeUrl: (v: string) => void;
 
+  thumbnailUrl: string;
+  setThumbnailUrl: (v: string) => void;
 
-videoUrl:string;
-setVideoUrl:(v:string)=>void;
+  category: string;
+  setCategory: (v: string) => void;
 
-
-youtubeUrl:string;
-setYoutubeUrl:(v:string)=>void;
-
-
-thumbnailUrl:string;
-setThumbnailUrl:(v:string)=>void;
-
-
-category:string;
-setCategory:(v:string)=>void;
-
-
-onNext:()=>void;
+  onNext: () => void;
 
 };
 
@@ -169,59 +166,90 @@ onNext:()=>void;
 
 export default function CreateVideoContent({
 
-title,
-setTitle,
+  title,
+  setTitle,
 
-description,
-setDescription,
+  description,
+  setDescription,
 
-videoType,
-setVideoType,
+  videoType,
+  setVideoType,
 
-language,
-setLanguage,
+  language,
+  setLanguage,
 
-videoUrl,
-setVideoUrl,
+  videoUrl,
+  setVideoUrl,
 
-youtubeUrl,
-setYoutubeUrl,
+  videoAsset,
+  setVideoAsset,
 
-thumbnailUrl,
-setThumbnailUrl,
+  youtubeUrl,
+  setYoutubeUrl,
 
-category,
-setCategory,
+  thumbnailUrl,
+  setThumbnailUrl,
 
-location,
-setLocation,
+  category,
+  setCategory,
 
-onNext,
+  location,
+  setLocation,
 
-}:Props){
+  onNext,
 
+}: Props) {
 
 
 const pickVideo = async () => {
+
+  const permission =
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permission.granted) {
+
+    alert('Permission required');
+
+    return;
+  }
+
+
   const result =
     await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-      allowsEditing: true,
+
+      mediaTypes:
+        ImagePicker.MediaTypeOptions.Videos,
+
+      allowsEditing: false,
+
       quality: 1,
+
     });
+
 
   if (result.canceled) {
     return;
   }
 
-  const asset = result.assets[0];
 
-  console.log('SELECTED VIDEO:', asset);
+  const asset =
+    result.assets[0];
 
-  // Local URI — use only for preview
+
+  console.log(
+    'SELECTED VIDEO:',
+    asset,
+  );
+
+
+  // Keep actual file for upload
+  setVideoAsset(asset);
+
+
+  // Keep URI for local preview
   setVideoUrl(asset.uri);
-};
 
+};
 
 
 return (

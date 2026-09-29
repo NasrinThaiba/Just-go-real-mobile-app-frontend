@@ -19,13 +19,14 @@ import {
   useLocalSearchParams,
 } from 'expo-router';
 
-
 import {
   createVideo,
   getMyVideoById,
   updateVideo,
+  uploadVideoFile,
 } from '../api/video.api';
 
+import * as ImagePicker from 'expo-image-picker';
 
 import type {
   CreateVideoPayload,
@@ -33,10 +34,14 @@ import type {
   VideoType,
 } from '../types/video.types';
 
+import CreateVideoContent
+  from '../components/CreateVideoContent';
 
-import CreateVideoContent from "../components/CreateVideoContent";
-import CreateVideoPreview from "../components/CreateVideoPreview";
-import CreateVideoPublish from "../components/CreateVideoPublish";
+import CreateVideoPreview
+  from '../components/CreateVideoPreview';
+
+import CreateVideoPublish
+  from '../components/CreateVideoPublish';
 
 
 type Step =
@@ -45,529 +50,624 @@ type Step =
   | 'publish';
 
 
+// =====================================================
+// YOUTUBE ID
+// =====================================================
 
-export default function CreateVideoScreen(){
-
-
-function extractYoutubeId(url:string){
+function extractYoutubeId(
+  url: string,
+): string | undefined {
 
   const regex =
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/;
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/;
 
-
-  const match = url.match(regex);
-
+  const match =
+    url
+      .trim()
+      .match(regex);
 
   return match?.[1];
-
 }
 
 
+// =====================================================
+// SCREEN
+// =====================================================
 
-const params =
-useLocalSearchParams<{
- id?:string;
-}>();
+export default function CreateVideoScreen() {
 
-
-const videoId =
-params.id;
-
-
-const isEdit =
-Boolean(videoId);
+  const params =
+    useLocalSearchParams<{
+      id?: string;
+    }>();
 
 
-
-// ======================
-// STATES
-// ======================
+  const videoId =
+    params.id;
 
 
-const [step,setStep] =
-useState<Step>('content');
+  const isEdit =
+    Boolean(videoId);
 
 
-const [title,setTitle] =
-useState('');
+  // ===================================================
+  // STATES
+  // ===================================================
+
+  const [step, setStep] =
+    useState<Step>('content');
 
 
-const [description,setDescription] =
-useState('');
+  const [title, setTitle] =
+    useState('');
 
 
-/**
- * Local uploaded video
- */
-const [videoUrl,setVideoUrl] =
-useState('');
+  const [description, setDescription] =
+    useState('');
 
 
-
-/**
- * Youtube URL
- */
-const [youtubeUrl,setYoutubeUrl] =
-useState('');
-
-
-
-const [thumbnailUrl,setThumbnailUrl] =
-useState('');
-
-
-
-const [videoType,setVideoType] =
-useState<VideoType>(
-  'latest'
-);
+  /**
+   * Existing/permanent video URL.
+   *
+   * Before upload:
+   * empty
+   *
+   * After upload:
+   * S3 object URL
+   */
+  const [videoUrl, setVideoUrl] =
+    useState('');
 
 
-
-const [category,setCategory] =
-useState(
-  'other'
-);
-
-
-
-const [language,setLanguage] =
-useState<VideoLanguage>(
-  'en'
-);
+  /**
+   * S3 object key.
+   *
+   * Example:
+   *
+   * videos/userId/abc.mp4
+   */
+  const [videoKey, setVideoKey] =
+    useState('');
 
 
-const [location,setLocation] =
-useState('');
+  /**
+   * Selected local video.
+   */
+  const [videoAsset, setVideoAsset] =
+    useState<
+      ImagePicker.ImagePickerAsset | null
+    >(null);
 
 
+  /**
+   * YouTube URL.
+   */
+  const [youtubeUrl, setYoutubeUrl] =
+    useState('');
 
-const [loading,setLoading] =
-useState(false);
+
+  const [thumbnailUrl, setThumbnailUrl] =
+    useState('');
 
 
+  const [videoType, setVideoType] =
+    useState<VideoType>(
+      'latest',
+    );
 
 
+  const [category, setCategory] =
+    useState('other');
 
-// ======================
-// EDIT LOAD
-// ======================
 
-useEffect(()=>{
+  const [language, setLanguage] =
+    useState<VideoLanguage>(
+      'en',
+    );
 
-  if(!videoId){
+
+  const [location, setLocation] =
+    useState('');
+
+
+  const [loading, setLoading] =
+    useState(false);
+
+
+  // ===================================================
+  // LOAD VIDEO FOR EDIT
+  // ===================================================
+
+  useEffect(() => {
+  if (!videoId) {
     return;
   }
 
-
   const id = videoId;
 
+  async function loadVideo() {
+    try {
+      const data = await getMyVideoById(id);
 
-  async function loadVideo(){
+      setTitle(data.title ?? '');
 
-    try{
+      setDescription(data.description ?? '');
 
-      const data =
-        await getMyVideoById(id);
+      if (data.videoSource === 'direct') {
+        setVideoUrl(data.mediaUrl ?? '');
+        setVideoKey(data.mediaKey ?? '');
+      } else {
+        setVideoUrl('');
+        setVideoKey('');
+      }
 
-
-      setTitle(
-        data.title ?? ''
-      );
-
-
-      setDescription(
-        data.description ?? ''
-      );
-
-
-      setVideoUrl(
-        data.videoSource === 'direct'
-          ? data.mediaUrl ?? ''
-          : ''
-      );
-
-
-      setYoutubeUrl(
-        data.videoSource === 'youtube'
-        ? `https://youtube.com/watch?v=${data.youtubeVideoId}`
-        :''
-      );
-
+      if (
+        data.videoSource === 'youtube' &&
+        data.youtubeVideoId
+      ) {
+        setYoutubeUrl(
+          `https://youtube.com/watch?v=${data.youtubeVideoId}`,
+        );
+      } else {
+        setYoutubeUrl('');
+      }
 
       setThumbnailUrl(
-        data.thumbnailUrl ?? ''
+        data.thumbnailUrl ?? '',
       );
-
 
       setVideoType(
-        data.videoType ?? 'latest'
+        data.videoType ?? 'latest',
       );
-
 
       setCategory(
-        data.category ?? ''
+        data.category ?? '',
       );
-
 
       setLocation(
-        data.location ?? ''
+        data.location ?? '',
       );
-
 
       setLanguage(
-        data.language ?? 'en'
+        data.language ?? 'en',
       );
 
-
+    } catch (error) {
+      console.log(
+        'LOAD VIDEO ERROR:',
+        error,
+      );
     }
-    catch(error){
+  }
+
+  loadVideo();
+
+}, [videoId]);
+
+
+  // ===================================================
+  // SAVE VIDEO
+  // ===================================================
+
+  async function saveVideo() {
+
+    try {
+
+      setLoading(true);
+
+
+      const trimmedYoutubeUrl =
+        youtubeUrl.trim();
+
+
+      const isYoutube =
+        trimmedYoutubeUrl.length > 0;
+
+
+      // =================================================
+      // VIDEO URL
+      // =================================================
+
+      let permanentVideoUrl =
+        videoUrl;
+
+
+      // =================================================
+      // VIDEO KEY
+      // =================================================
+
+      let permanentVideoKey =
+        videoKey;
+
+
+      // =================================================
+      // NORMAL VIDEO → S3
+      // =================================================
+
+      if (
+        !isYoutube &&
+        videoAsset
+      ) {
+
+        console.log(
+          'Uploading selected video to S3...',
+        );
+
+
+        const uploadResult =
+          await uploadVideoFile(
+            videoAsset,
+          );
+
+
+        permanentVideoUrl =
+          uploadResult.fileUrl;
+
+
+        permanentVideoKey =
+          uploadResult.key;
+
+
+        // Keep them in state.
+        setVideoUrl(
+          permanentVideoUrl,
+        );
+
+
+        setVideoKey(
+          permanentVideoKey,
+        );
+
+
+        console.log(
+          'S3 VIDEO URL:',
+          permanentVideoUrl,
+        );
+
+
+        console.log(
+          'S3 VIDEO KEY:',
+          permanentVideoKey,
+        );
+
+      }
+
+
+      // =================================================
+      // VALIDATE NORMAL VIDEO
+      // =================================================
+
+      if (
+        !isYoutube &&
+        !permanentVideoUrl
+      ) {
+
+        throw new Error(
+          'Please select a video',
+        );
+
+      }
+
+
+      // =================================================
+      // YOUTUBE ID
+      // =================================================
+
+      let youtubeVideoId:
+        | string
+        | undefined;
+
+
+      if (isYoutube) {
+
+        youtubeVideoId =
+          extractYoutubeId(
+            trimmedYoutubeUrl,
+          );
+
+
+        if (!youtubeVideoId) {
+
+          throw new Error(
+            'Please enter a valid YouTube URL',
+          );
+
+        }
+
+      }
+
+
+      // =================================================
+      // PAYLOAD
+      // =================================================
+
+      const payload:
+        CreateVideoPayload = {
+
+        title:
+          title.trim(),
+
+        description:
+          description.trim(),
+
+        videoType,
+
+        videoSource:
+          isYoutube
+            ? 'youtube'
+            : 'direct',
+
+        // ---------------------------------------------
+        // DIRECT VIDEO
+        // ---------------------------------------------
+
+        mediaUrl:
+          !isYoutube
+            ? permanentVideoUrl
+            : undefined,
+
+        mediaKey:
+          !isYoutube
+            ? permanentVideoKey
+            : undefined,
+
+        // ---------------------------------------------
+        // YOUTUBE
+        // ---------------------------------------------
+
+        youtubeVideoId:
+          isYoutube
+            ? youtubeVideoId
+            : undefined,
+
+        // ---------------------------------------------
+        // OTHER DATA
+        // ---------------------------------------------
+
+        thumbnailUrl:
+          thumbnailUrl.trim(),
+
+        category,
+
+        language,
+
+        location,
+
+        status:
+          'pending',
+
+      };
+
 
       console.log(
-        "LOAD VIDEO ERROR",
-        error
+        'FINAL VIDEO PAYLOAD:',
+        JSON.stringify(
+          payload,
+          null,
+          2,
+        ),
       );
+
+
+      // =================================================
+      // UPDATE
+      // =================================================
+
+      if (
+        isEdit &&
+        videoId
+      ) {
+
+        await updateVideo(
+          videoId,
+          payload,
+        );
+
+      }
+
+
+      // =================================================
+      // CREATE
+      // =================================================
+
+      else {
+
+        await createVideo(
+          payload,
+        );
+
+      }
+
+
+      // =================================================
+      // SUCCESS
+      // =================================================
+
+      Alert.alert(
+        'Success',
+        'Video submitted successfully',
+      );
+
+
+      router.replace(
+        '/video',
+      );
+
+    }
+    catch (error: any) {
+
+      console.log(
+        'SAVE VIDEO ERROR:',
+        error,
+      );
+
+
+      console.log(
+        'SAVE VIDEO RESPONSE:',
+        error?.response?.data,
+      );
+
+
+      const message =
+        error?.response?.data?.message ??
+        error?.message ??
+        'Failed to save video';
+
+
+      Alert.alert(
+        'Error',
+        message,
+      );
+
+    }
+    finally {
+
+      setLoading(false);
 
     }
 
   }
 
 
-  loadVideo();
+  // ===================================================
+  // UI
+  // ===================================================
 
+  return (
 
-},[videoId]);
+    <SafeAreaView
+      className="flex-1 bg-slate-50"
+    >
 
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={
+          Platform.OS === 'ios'
+            ? 'padding'
+            : undefined
+        }
+      >
 
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            padding: 16,
+            paddingBottom: 120,
+          }}
+        >
 
+          {/* ===========================================
+              CONTENT
+          =========================================== */}
 
+          {step === 'content' && (
 
+            <CreateVideoContent
 
+              title={title}
+              setTitle={setTitle}
 
-// ======================
-// SAVE VIDEO
-// ======================
+              description={description}
+              setDescription={setDescription}
 
+              videoType={videoType}
+              setVideoType={setVideoType}
 
-async function saveVideo(){
+              category={category}
+              setCategory={setCategory}
 
+              language={language}
+              setLanguage={setLanguage}
 
-try{
+              videoUrl={videoUrl}
+              setVideoUrl={setVideoUrl}
 
+              videoAsset={videoAsset}
+              setVideoAsset={setVideoAsset}
 
-setLoading(true);
+              youtubeUrl={youtubeUrl}
+              setYoutubeUrl={setYoutubeUrl}
 
+              thumbnailUrl={thumbnailUrl}
+              setThumbnailUrl={setThumbnailUrl}
 
+              location={location}
+              setLocation={setLocation}
 
-const isYoutube =
-youtubeUrl.trim().length > 0;
+              onNext={() =>
+                setStep('preview')
+              }
 
+            />
 
+          )}
 
-const payload:CreateVideoPayload = {
 
-title:title.trim(),
+          {/* ===========================================
+              PREVIEW
+          =========================================== */}
 
-description:description.trim(),
+          {step === 'preview' && (
 
-videoType,
+            <CreateVideoPreview
 
-videoSource:
-isYoutube
-?
-'youtube'
-:
-'direct',
+              title={title}
 
-mediaUrl:
-!isYoutube
-?
-videoUrl
-:
-undefined,
+              description={description}
 
-youtubeVideoId:
-isYoutube
-?
-extractYoutubeId(youtubeUrl)
-:
-undefined,
+              videoUrl={videoUrl}
 
-thumbnailUrl,
+              youtubeUrl={youtubeUrl}
 
-category,
+              thumbnailUrl={thumbnailUrl}
 
-language,
+              category={category}
 
-location,
+              videoType={videoType}
 
-status:'pending',
+              language={language}
 
-};
+              location={location}
 
+              onBack={() =>
+                setStep('content')
+              }
 
-console.log(
-"VIDEO PAYLOAD",
-payload
-);
+              onNext={() =>
+                setStep('publish')
+              }
 
+            />
 
+          )}
 
 
-if(isEdit && videoId){
+          {/* ===========================================
+              PUBLISH
+          =========================================== */}
 
+          {step === 'publish' && (
 
-await updateVideo(
- videoId,
- payload
-);
+            <CreateVideoPublish
 
+              loading={loading}
 
-}
-else{
+              onBack={() =>
+                setStep('preview')
+              }
 
+              onPublish={saveVideo}
 
-await createVideo(
- payload
-);
+            />
 
+          )}
 
-}
+        </ScrollView>
 
+      </KeyboardAvoidingView>
 
+    </SafeAreaView>
 
-
-Alert.alert(
-"Success",
-"Video submitted successfully"
-);
-
-
-
-router.replace('/video');
-
-
-
-}
-catch(error:any){
-
-
-console.log(
-"SAVE VIDEO ERROR",
-error.response?.data
-);
-
-
-
-Alert.alert(
-"Error",
-JSON.stringify(
-error.response?.data
-)
-);
-
-
-}
-finally{
-
-setLoading(false);
-
-}
-
-
-}
-
-
-
-
-
-
-
-return (
-
-<SafeAreaView
-className="flex-1 bg-slate-50"
->
-
-
-<KeyboardAvoidingView
-
-className="flex-1"
-
-behavior={
-Platform.OS === 'ios'
-?
-'padding'
-:
-undefined
-}
-
->
-
-
-<ScrollView
-
-showsVerticalScrollIndicator={false}
-
-contentContainerStyle={{
-padding:16,
-paddingBottom:120,
-}}
-
->
-
-
-
-
-
-{
-step === 'content'
-&&
-(
-
-<CreateVideoContent
-
-title={title}
-setTitle={setTitle}
-
-description={description}
-setDescription={setDescription}
-
-videoType={videoType}
-setVideoType={setVideoType}
-
-category={category}
-setCategory={setCategory}
-
-language={language}
-setLanguage={setLanguage}
-
-videoUrl={videoUrl}
-setVideoUrl={setVideoUrl}
-
-youtubeUrl={youtubeUrl}
-setYoutubeUrl={setYoutubeUrl}
-
-thumbnailUrl={thumbnailUrl}
-setThumbnailUrl={setThumbnailUrl}
-
-
-location={location}
-setLocation={setLocation}
-
-
-onNext={()=>setStep('preview')}
-
-/>
-
-)
-
-}
-
-
-
-
-
-
-
-{
-step === 'preview'
-&&
-(
-
-<CreateVideoPreview
-
-
-title={title}
-
-
-description={description}
-
-
-videoUrl={videoUrl}
-
-
-youtubeUrl={youtubeUrl}
-
-
-thumbnailUrl={thumbnailUrl}
-
-
-category={category}
-
-
-videoType={videoType}
-
-
-language={language}
-
-
-location={location}
-
-
-onBack={()=>
-setStep('content')
-}
-
-
-
-onNext={()=>
-setStep('publish')
-}
-
-
-
-/>
-
-)
-
-}
-
-
-
-
-
-
-
-
-{
-step === 'publish'
-&&
-(
-
-<CreateVideoPublish
-
-
-loading={loading}
-
-
-
-onBack={()=>
-setStep('preview')
-}
-
-
-
-onPublish={saveVideo}
-
-
-/>
-
-)
-
-}
-
-
-
-</ScrollView>
-
-
-</KeyboardAvoidingView>
-
-
-</SafeAreaView>
-
-);
-
+  );
 
 }

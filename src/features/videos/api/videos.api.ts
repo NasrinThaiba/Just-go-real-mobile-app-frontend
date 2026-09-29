@@ -1,11 +1,16 @@
-import { API_BASE_URL } from '@/services/apiClient';
+import {
+  API_BASE_URL,
+} from '@/services/apiClient';
+
+import {
+  apiClient,
+} from '@/shared/api/axiosInstance';
 
 import type {
   VideoItem,
   CreateVideoInput,
   UpdateVideoInput,
 } from '@/features/videos/types/videos.types';
-import { apiClient } from '@/shared/api/axiosInstance';
 
 
 type VideoListResponse = {
@@ -25,6 +30,10 @@ type VideoResponse = {
   };
 };
 
+
+// =====================================================
+// NORMALIZE VIDEO
+// =====================================================
 
 function normalizeVideo(
   item: any,
@@ -48,66 +57,44 @@ function normalizeVideo(
     status:
       item.status?.toLowerCase(),
 
-    // IMPORTANT
     views:
       Number(item.views ?? 0),
 
     likes:
       Number(item.likes ?? 0),
-
   };
-
 }
 
 
-export const videosApi = {
+// =====================================================
+// GET ALL VIDEOS
+// =====================================================
 
+export async function getVideos(): Promise<VideoItem[]> {
 
-  // =================================================
-  // GET ALL VIDEOS
-  // =================================================
-
-  async getVideos(): Promise<VideoItem[]> {
-
-    const response =
-      await fetch(
-        `${API_BASE_URL}/videos`,
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Failed to fetch videos ${response.status}`,
-      );
-
-    }
-
-
-    const result =
-      await response.json() as VideoListResponse;
-
-
-    return (
-      result.data?.items?.map(
-        normalizeVideo,
-      ) ?? []
+  const response =
+    await apiClient.get<VideoListResponse>(
+      '/videos',
     );
 
-  },
+  return (
+    response.data.data?.items?.map(
+      normalizeVideo,
+    ) ?? []
+  );
+}
 
 
-  // =================================================
-  // GET MY VIDEOS
-  // =================================================
+// =====================================================
+// GET MY VIDEOS
+// =====================================================
 
-  async getMyVideos(): Promise<VideoItem[]> {
+export async function getMyVideos(): Promise<VideoItem[]> {
 
   const response =
     await apiClient.get<VideoListResponse>(
       '/videos/me',
     );
-
 
   console.log(
     'MY VIDEOS RESPONSE:',
@@ -118,275 +105,247 @@ export const videosApi = {
     ),
   );
 
+  return (
+    response.data.data?.items?.map(
+      normalizeVideo,
+    ) ?? []
+  );
+}
+
+
+// =====================================================
+// GET BREAKING VIDEOS
+// =====================================================
+
+export async function getBreakingVideos(
+  params: {
+    language?: string;
+    page?: number;
+    limit?: number;
+  } = {},
+): Promise<VideoItem[]> {
+
+  const query =
+    new URLSearchParams();
+
+  if (params.language) {
+    query.append(
+      'language',
+      params.language,
+    );
+  }
+
+  query.append(
+    'page',
+    String(
+      params.page ?? 1,
+    ),
+  );
+
+  query.append(
+    'limit',
+    String(
+      params.limit ?? 20,
+    ),
+  );
+
+  const response =
+    await apiClient.get<VideoListResponse>(
+      `/videos/breaking?${query.toString()}`,
+    );
 
   return (
     response.data.data?.items?.map(
       normalizeVideo,
     ) ?? []
   );
-
-},
-
-
-  // =================================================
-  // GET BREAKING VIDEOS
-  // =================================================
-
-  async getBreakingVideos(
-    params: {
-      language?: string;
-      page?: number;
-      limit?: number;
-    } = {},
-  ): Promise<VideoItem[]> {
-
-    const query =
-      new URLSearchParams();
+}
 
 
-    if (params.language) {
+// =====================================================
+// GET LATEST VIDEOS
+// =====================================================
 
-      query.append(
-        'language',
-        params.language,
-      );
+export async function getLatestVideos(
+  params: {
+    language?: string;
+    page?: number;
+    limit?: number;
+  } = {},
+): Promise<VideoItem[]> {
 
-    }
+  const query =
+    new URLSearchParams();
 
-
+  if (params.language) {
     query.append(
-      'page',
-      String(
-        params.page ?? 1,
-      ),
+      'language',
+      params.language,
+    );
+  }
+
+  query.append(
+    'page',
+    String(
+      params.page ?? 1,
+    ),
+  );
+
+  query.append(
+    'limit',
+    String(
+      params.limit ?? 20,
+    ),
+  );
+
+  const response =
+    await apiClient.get<VideoListResponse>(
+      `/videos/latest?${query.toString()}`,
     );
 
+  return (
+    response.data.data?.items?.map(
+      normalizeVideo,
+    ) ?? []
+  );
+}
 
+
+// =====================================================
+// GET LIVE VIDEOS
+// =====================================================
+
+export async function getLiveVideos(
+  params: {
+    language?: string;
+    page?: number;
+    limit?: number;
+  } = {},
+): Promise<VideoItem[]> {
+
+  const query =
+    new URLSearchParams();
+
+  if (params.language) {
     query.append(
-      'limit',
-      String(
-        params.limit ?? 20,
-      ),
+      'language',
+      params.language,
+    );
+  }
+
+  query.append(
+    'page',
+    String(
+      params.page ?? 1,
+    ),
+  );
+
+  query.append(
+    'limit',
+    String(
+      params.limit ?? 20,
+    ),
+  );
+
+  const response =
+    await apiClient.get<VideoListResponse>(
+      `/videos/live?${query.toString()}`,
     );
 
-
-    const response =
-      await fetch(
-        `${API_BASE_URL}/videos/breaking?${query.toString()}`,
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Failed to fetch breaking videos ${response.status}`,
-      );
-
-    }
+  return (
+    response.data.data?.items?.map(
+      normalizeVideo,
+    ) ?? []
+  );
+}
 
 
-    const result =
-      await response.json() as VideoListResponse;
+// =====================================================
+// GET VIDEO BY ID
+// =====================================================
 
+export async function getVideoById(
+  id: string,
+): Promise<VideoItem | null> {
 
-    return (
-      result.data?.items?.map(
-        normalizeVideo,
-      ) ?? []
+  if (!id) {
+    return null;
+  }
+
+  const response =
+    await apiClient.get<VideoResponse>(
+      `/videos/${id}`,
     );
 
-  },
+  return response.data.data?.item
+    ? normalizeVideo(
+        response.data.data.item,
+      )
+    : null;
+}
 
 
-  // =================================================
-  // GET VIDEO BY ID
-  // =================================================
+// =====================================================
+// UPDATE VIDEO
+// =====================================================
 
-  async getVideoById(
-    id: string,
-  ): Promise<VideoItem | null> {
+export async function updateVideo(
+  id: string,
+  input: UpdateVideoInput,
+): Promise<VideoItem> {
 
-    if (!id) {
-      return null;
-    }
-
-
-    const response =
-      await fetch(
-        `${API_BASE_URL}/videos/${id}`,
-      );
-
-
-    if (!response.ok) {
-
-      if (response.status === 404) {
-        return null;
-      }
-
-
-      throw new Error(
-        `Failed to fetch video ${response.status}`,
-      );
-
-    }
-
-
-    const result =
-      await response.json() as VideoResponse;
-
-
-    return result.data?.item
-      ? normalizeVideo(
-          result.data.item,
-        )
-      : null;
-
-  },
-
-
-  // =================================================
-  // CREATE VIDEO
-  // =================================================
-
-  async createVideo(
-    input: CreateVideoInput,
-  ): Promise<VideoItem> {
-
-    const response =
-      await fetch(
-        `${API_BASE_URL}/videos`,
-        {
-
-          method: 'POST',
-
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-
-          body:
-            JSON.stringify(input),
-
-        },
-      );
-
-
-    if (!response.ok) {
-
-      const error =
-        await response.text();
-
-
-      throw new Error(
-        error ||
-        'Failed to create video',
-      );
-
-    }
-
-
-    const result =
-      await response.json() as VideoResponse;
-
-
-    if (!result.data?.item) {
-
-      throw new Error(
-        'Video data missing',
-      );
-
-    }
-
-
-    return normalizeVideo(
-      result.data.item,
+  const response =
+    await apiClient.patch<VideoResponse>(
+      `/videos/${id}`,
+      input,
     );
 
-  },
-
-
-  // =================================================
-  // UPDATE VIDEO
-  // =================================================
-
-  async updateVideo(
-    id: string,
-    input: UpdateVideoInput,
-  ): Promise<VideoItem> {
-
-    const response =
-      await fetch(
-        `${API_BASE_URL}/videos/${id}`,
-        {
-
-          method: 'PATCH',
-
-          headers: {
-            'Content-Type':
-              'application/json',
-          },
-
-          body:
-            JSON.stringify(input),
-
-        },
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Failed to update video ${response.status}`,
-      );
-
-    }
-
-
-    const result =
-      await response.json() as VideoResponse;
-
-
-    if (!result.data?.item) {
-
-      throw new Error(
-        'Updated video data missing',
-      );
-
-    }
-
-
-    return normalizeVideo(
-      result.data.item,
+  if (!response.data.data?.item) {
+    throw new Error(
+      'Updated video data missing',
     );
+  }
 
-  },
-
-
-  // =================================================
-  // DELETE VIDEO
-  // =================================================
-
-  async deleteVideo(
-    id: string,
-  ): Promise<void> {
-
-    const response =
-      await fetch(
-        `${API_BASE_URL}/videos/${id}`,
-        {
-          method: 'DELETE',
-        },
-      );
+  return normalizeVideo(
+    response.data.data.item,
+  );
+}
 
 
-    if (!response.ok) {
+// =====================================================
+// DELETE VIDEO
+// =====================================================
 
-      throw new Error(
-        `Failed to delete video ${response.status}`,
-      );
+export async function deleteVideo(
+  id: string,
+): Promise<void> {
 
-    }
+  await apiClient.delete(
+    `/videos/${id}`,
+  );
+}
 
-  },
+
+// =====================================================
+// EXPORT OBJECT
+// =====================================================
+
+export const videosApi = {
+
+  getVideos,
+
+  getMyVideos,
+
+  getBreakingVideos,
+
+  getLatestVideos,
+
+  getLiveVideos,
+
+  getVideoById,
+
+  updateVideo,
+
+  deleteVideo,
 
 };
