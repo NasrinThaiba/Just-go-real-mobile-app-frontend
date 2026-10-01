@@ -27,8 +27,6 @@ import { useBreakingVideos } from '@/features/videos/hooks/useBreakingVideos';
 
 import { useNews } from '@/features/news/hooks/useNews';
 
-import { useTrendingNews } from '@/features/news/hooks/useTrendingNews';
-
 import type {
   FeedItem,
 } from '@/features/news/types/news.types';
@@ -175,26 +173,6 @@ export default function HomeScreen() {
     error:
       breakingVideosError,
   } = useBreakingVideos(
-    currentLanguage,
-  );
-
-
-  // ==========================================================
-  // TRENDING NEWS
-  // Backend:
-  // GET /news/trending
-  // ==========================================================
-
-  const {
-    items: trendingNews,
-
-    isLoading:
-      isTrendingLoading,
-
-    error:
-      trendingError,
-
-  } = useTrendingNews(
     currentLanguage,
   );
 
@@ -601,89 +579,6 @@ export default function HomeScreen() {
 
         </View>
 
-
-        {/* ===================================================
-            TRENDING NEWS
-        =================================================== */}
-
-        <SectionHeader
-          title="Trending News"
-          onViewAll={() => {
-            router.navigate({
-              pathname: '/news',
-              params: {
-                type: 'trending',
-              },
-            });
-          }}
-        />
-
-
-        {isTrendingLoading ? (
-
-          <View className="h-40 items-center justify-center">
-
-            <LoadingView
-              message="Loading trending news..."
-            />
-
-          </View>
-
-        ) : trendingError ? (
-
-          <View className="rounded-2xl bg-red-50 p-4">
-
-            <Text className="text-sm font-semibold text-red-600">
-              {trendingError}
-            </Text>
-
-          </View>
-
-        ) : trendingNews.length > 0 ? (
-
-          <View>
-
-            {trendingNews
-              .slice(0, 5)
-              .map(
-                (item) => (
-
-                  <LatestNewsItem
-                    key={
-                      item.id
-                    }
-
-                    item={
-                      item
-                    }
-
-                    language={
-                      appLanguage
-                    }
-
-                    onPress={() =>
-                      openContent(
-                        item,
-                      )
-                    }
-                  />
-
-                ),
-              )}
-
-          </View>
-
-        ) : (
-
-          <View className="rounded-2xl bg-slate-50 px-4 py-10">
-
-            <Text className="text-center text-sm font-semibold text-textMuted">
-              No trending news available
-            </Text>
-
-          </View>
-
-        )}
 
 
         {/* ===================================================
